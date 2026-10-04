@@ -73,7 +73,6 @@
       white-space: nowrap;
     }
     .btn:hover { transform: translateY(-2px); }
-
     .btn-primary {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
       color: #fff;
@@ -82,7 +81,6 @@
     .btn-primary:hover {
       box-shadow: 0 22px 44px rgba(13, 95, 185, 0.35);
     }
-
     .btn-secondary {
       background: rgba(13, 95, 185, 0.04);
       color: var(--primary);
@@ -446,18 +444,37 @@
     }
     section:nth-child(even) { background: var(--bg); }
 
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1.8rem;
+    .areas-panel {
+      display: flex;
+      align-items: stretch;
+      gap: 1.4rem;
+      overflow-x: auto;
+      padding-bottom: 0.8rem;
+      scroll-snap-type: x proximity;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(13, 95, 185, 0.45) rgba(13, 95, 185, 0.08);
+    }
+    .areas-panel::-webkit-scrollbar {
+      height: 10px;
+    }
+    .areas-panel::-webkit-scrollbar-thumb {
+      background: rgba(13, 95, 185, 0.45);
+      border-radius: 999px;
+    }
+    .areas-panel::-webkit-scrollbar-track {
+      background: rgba(13, 95, 185, 0.08);
+      border-radius: 999px;
     }
     .service-card {
+      flex: 0 0 min(340px, 82vw);
+      min-width: 280px;
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 24px;
       padding: 1.8rem 1.6rem;
       box-shadow: 0 12px 30px rgba(16, 24, 40, 0.04);
       transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      scroll-snap-align: start;
     }
     .service-card:hover {
       transform: translateY(-8px);
@@ -491,6 +508,30 @@
       margin: 0;
       color: var(--text-soft);
       line-height: 1.8;
+    }
+
+    .carousel-actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 1.4rem;
+    }
+    .carousel-btn {
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.1rem;
+      box-shadow: 0 10px 18px rgba(16, 24, 40, 0.04);
+      transition: 0.2s ease;
+    }
+    .carousel-btn:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
     }
 
     .steps-grid {
@@ -744,9 +785,7 @@
     }
 
     @media (max-width: 980px) {
-      .hero-inner, .service-grid, .steps-grid, .contact-grid, .footer-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+      .hero-inner, .contact-grid, .footer-grid { grid-template-columns: 1fr 1fr; }
       .hero-inner { grid-template-columns: 1fr; }
       .hero-copy { max-width: 100%; }
       .hero-meta { justify-content: center; }
@@ -760,7 +799,7 @@
       .btn { width: 100%; }
       .hero { padding-top: 5.4rem; }
       .floating-panel { display: none; }
-      .service-grid, .steps-grid, .contact-grid, .footer-grid, .trustbar-inner { grid-template-columns: 1fr; }
+      .contact-grid, .footer-grid, .trustbar-inner { grid-template-columns: 1fr; }
       .visual-card { transform: none; }
       .quote-wrap { padding: 2.5rem 1.5rem; }
       .contact-card { padding: 1.3rem; }
@@ -795,7 +834,7 @@
 
           <div class="cta-row">
             <a class="btn btn-primary" href="#contacto"><i class="fa-solid fa-calendar-check"></i> Pedir consulta</a>
-            <a class="btn btn-secondary" href="https://wa.me/351938357708?text=Olá%20ProLegal%20Solutions,%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+            <a class="btn btn-secondary" href="https://wa.me/351938357708?text=Olá%20ProLegal%20Solutions,%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Falar por WhatsApp</a>
           </div>
 
           <div class="hero-meta">
@@ -851,7 +890,7 @@
         <h2 class="section-title" data-animate>Especialistas em <strong>soluções jurídicas</strong> que protegem o seu futuro.</h2>
         <p class="lead" data-animate>Atuamos com responsabilidade e precisão em múltiplas áreas do direito, ajudando clientes particulares e empresas a tomar decisões bem fundamentadas.</p>
 
-        <div class="services-grid">
+        <div class="areas-panel" id="areasCarousel" aria-label="Carrossel de áreas de atuação">
           <article class="service-card" data-animate>
             <div class="service-icon"><i class="fa-solid fa-house-user"></i></div>
             <h3>Direito da Família</h3>
@@ -882,6 +921,11 @@
             <h3>Consultoria Jurídica</h3>
             <p>Análise de situações, prevenção de conflitos, orientação estratégica e apoio à tomada de decisão.</p>
           </article>
+        </div>
+
+        <div class="carousel-actions" aria-label="Navegação do carrossel">
+          <button type="button" class="carousel-btn" id="prevArea" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+          <button type="button" class="carousel-btn" id="nextArea" aria-label="Seguinte"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
       </div>
     </section>
@@ -1012,12 +1056,12 @@
             </div>
 
             <div class="field">
-              <label for="descricao"><i class="fa-solid fa-pen-fancy"></i> Descreva a situação</label>
-              <textarea id="descricao" name="descricao" placeholder="Descreva brevemente a sua situação..." required></textarea>
+              <label for="descricao"><i class="fa-solid fa-comment"></i> Descreva a situação</label>
+              <textarea id="descricao" name="descricao" placeholder="Descreva brevemente o problema ou a dúvida jurídica..." required></textarea>
             </div>
 
             <div class="form-note">
-              <span><i class="fa-solid fa-circle-info"></i> Não inclua dados sensíveis nesta fase. Falaremos em confidencialidade na consulta. Ao enviar, aceita a <a href="#privacidade">Política de Privacidade</a>.</span>
+              Não inclua dados sensíveis nesta fase. Falaremos de tudo em confidencialidade na consulta. Ao enviar, aceita a <a href="#privacidade">Política de Privacidade</a>.
             </div>
 
             <button type="submit" class="btn btn-primary"><i class="fa-brands fa-whatsapp"></i> Enviar por WhatsApp</button>
@@ -1032,20 +1076,20 @@
         <h2 class="section-title" data-animate>Política de <strong>privacidade</strong>.</h2>
 
         <div class="privacy-box" data-animate>
-          <h3><i class="fa-solid fa-building"></i> Responsável pelo tratamento</h3>
+          <h3>Responsável pelo tratamento</h3>
           <p>ProLegal Solutions, Rua A Gazeta d'Oeiras 2 - 1.º C, 2780-171 Oeiras. Email: prolegalsolutions.pt@gmail.com.</p>
 
-          <h3><i class="fa-solid fa-database"></i> Que dados recolhemos e porquê</h3>
-          <p>Nome, área do caso e a descrição do problema. Recolhemos apenas os dados necessários para responder ao seu pedido de contacto e preparar a consulta, se avançar.</p>
+          <h3>Que dados recolhemos e porquê</h3>
+          <p>Nome, área do caso e a descrição que escolher partilhar, apenas para responder ao seu pedido de contacto e, se avançar, preparar a consulta. O formulário não guarda dados no site: a mensagem é enviada por WhatsApp, que é operado por um prestador externo com as suas próprias regras. Pedimos que não envie dados sensíveis por esta via.</p>
 
-          <h3><i class="fa-solid fa-file-contract"></i> Fundamento e conservação</h3>
-          <p>O tratamento assenta no seu pedido e no seu consentimento. Os dados são conservados apenas pelo tempo necessário ao contacto, ao acompanhamento do caso e ao cumprimento das obrigações legais e deontológicas.</p>
+          <h3>Fundamento e conservação</h3>
+          <p>O tratamento assenta no seu pedido (diligências pré-contratuais) e no seu consentimento. Conservamos os dados pelo tempo necessário ao contacto e ao cumprimento das obrigações legais e deontológicas, incluindo o sigilo profissional.</p>
 
-          <h3><i class="fa-solid fa-cookie-bite"></i> Cookies e terceiros</h3>
-          <p>Este site não usa cookies de rastreio nem ferramentas de análise para publicidade. A mensagem do formulário é enviada por WhatsApp, sendo esse serviço gerido por prestador externo.</p>
+          <h3>Cookies e terceiros</h3>
+          <p>Este site não usa cookies de rastreio nem ferramentas de análise e não envia dados para redes de publicidade.</p>
 
-          <h3><i class="fa-solid fa-user-shield"></i> Os seus direitos</h3>
-          <p>Pode pedir acesso, retificação, eliminação, limitação, oposição e portabilidade dos seus dados e retirar o consentimento a qualquer momento. Tem também direito de reclamar à CNPD.</p>
+          <h3>Os seus direitos</h3>
+          <p>Pode pedir acesso, retificação, apagamento, limitação, oposição e portabilidade dos seus dados, e retirar o consentimento a qualquer momento, por email. Tem também o direito de apresentar reclamação à Comissão Nacional de Proteção de Dados (cnpd.pt).</p>
         </div>
       </div>
     </section>
@@ -1055,40 +1099,36 @@
     <div class="container footer-grid">
       <div>
         <div class="footer-brand">ProLegal</div>
-        <p>Advogados com rigor, prontidão e atenção humana. A sua situação merece um acompanhamento claro e seguro.</p>
+        <p>| ADVOGADOS | LAWYER |</p>
       </div>
-
       <div>
         <h3>Escritório</h3>
-        <p>(+351) 938 357 708<br>prolegalsolutions.pt@gmail.com<br><br>Rua A Gazeta d'Oeiras 2 - 1.º C<br>2780-171 Oeiras</p>
+        <p>(+351) 938 357 708<br>prolegalsolutions.pt@gmail.com<br>Rua A Gazeta d'Oeiras 2 - 1.º C<br>2780-171 Oeiras</p>
       </div>
-
       <div>
         <h3>Links</h3>
         <div class="footer-links">
-          <a href="#areas">Áreas</a>
-          <a href="#processo">Processo</a>
-          <a href="#faq">FAQ</a>
+          <a href="#areas">Áreas de atuação</a>
+          <a href="#processo">Como funciona</a>
+          <a href="#faq">Perguntas frequentes</a>
           <a href="#contacto">Contacto</a>
-          <a href="#privacidade">Privacidade</a>
+          <a href="#privacidade">Política de privacidade</a>
         </div>
       </div>
     </div>
-
-    <div class="container footer-bottom">© 2026 ProLegal Solutions. Todos os direitos reservados.</div>
+    <div class="container footer-bottom">© 2026 ProLegal Solutions | Política de privacidade</div>
   </footer>
 
   <script>
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
         }
       });
     }, { threshold: 0.12 });
 
-    document.querySelectorAll('[data-animate]').forEach((el) => observer.observe(el));
+    document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
 
     document.querySelectorAll('.faq-question').forEach((button) => {
       button.addEventListener('click', () => {
@@ -1104,14 +1144,23 @@
       const nome = document.getElementById('nome').value.trim();
       const area = document.getElementById('area').value;
       const descricao = document.getElementById('descricao').value.trim();
-      if (!nome || !area || !descricao) {
-        alert('Por favor, preencha todos os campos.');
-        return;
-      }
       const message = `Olá ProLegal Solutions,%0A%0ANome: ${encodeURIComponent(nome)}%0AÁrea: ${encodeURIComponent(area)}%0A%0ADescrição:%0A${encodeURIComponent(descricao)}`;
       window.open(`https://wa.me/351938357708?text=${message}`, '_blank');
-      this.reset();
     });
+
+    const carousel = document.getElementById('areasCarousel');
+    const prevBtn = document.getElementById('prevArea');
+    const nextBtn = document.getElementById('nextArea');
+
+    if (carousel && prevBtn && nextBtn) {
+      const scrollAmount = 320;
+      prevBtn.addEventListener('click', () => {
+        carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      });
+      nextBtn.addEventListener('click', () => {
+        carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      });
+    }
   </script>
 </body>
 </html>
