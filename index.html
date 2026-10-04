@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProLegal Solutions | Advogados</title>
+    <style>
+        :root {
+            --primary: #0d5fb9;
+            --primary-dark: #0a4f9d;
+            --text: #1d1d1f;
+            --muted: #5c6470;
+            --surface: #f6f8fb;
+            --surface-2: #eef3f9;
+            --line: #e6ebf1;
+            --white: #fff;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text);
+            line-height: 1.7;
+            background: #fff;
+        }
+        a { color: inherit; text-decoration: none; }
+        img { max-width: 100%; }
+        .container {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 74px;
+        }
+
+        .brand {
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            font-size: 1.15rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.3rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #434d5b;
+            font-size: 0.96rem;
+        }
+
+        .nav-links a:hover { color: var(--primary); }
+
+        .btn {
+            display: inline-block;
+            border-radius: 6px;
+            padding: 0.9rem 1.5rem;
+            font-weight: 700;
+            transition: 0.2s ease;
+            border: 2px solid transparent;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            border-color: var(--primary);
+            background: #fff;
+            color: var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: #f1f6ff;
+        }
+
+        .hero {
+            background: linear-gradient(180deg, #f3f7fd 0%, #fff 100%);
+            padding: 5.5rem 0 4rem;
+        }
+
+        .hero-inner {
+            text-align: center;
+            max-width: 940px;
+            margin: 0 auto;
+        }
+
+        .eyebrow {
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2.5rem, 4vw, 4.1rem);
+            line-height: 1.08;
+            color: #111827;
+        }
+
+        .hero-subtitle {
+            margin: 1rem auto 1.2rem;
+            max-width: 760px;
+            font-size: clamp(1.15rem, 2vw, 1.6rem);
+            color: #383f49;
+            font-weight: 300;
+        }
+
+        .hero-copy {
+            max-width: 760px;
+            margin: 0 auto 2.2rem;
+            color: var(--muted);
+            font-size: 1.07rem;
+        }
+
+        .cta-row {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-meta {
+            margin-top: 1.25rem;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.02rem;
+        }
+
+        section {
+            padding: 4rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin: 0 0 1.2rem;
+            font-size: clamp(2rem, 3vw, 2.8rem);
+            color: #111827;
+        }
+
+        .section-lead {
+            max-width: 780px;
+            margin: 0 auto 2.5rem;
+            text-align: center;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .grid-areas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.4rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1.7rem 1.4rem;
+        }
+
+        .card h3 {
+            margin: 0 0 0.7rem;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .card p {
+            margin: 0;
+            color: #49515b;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .step {
+            background: #fff;
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem 1.2rem;
+            box-shadow: 0 14px 30px rgba(10, 20, 35, 0.04);
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .step h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.08rem;
+        }
+
+        .step p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .quote-box {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 2.1rem 1.6rem;
+            text-align: center;
+        }
+
+        .quote-box h3 {
+            margin: 0 0 0.8rem;
+            font-size: clamp(1.6rem, 2vw, 2rem);
+            color: #111827;
+        }
+
+        .quote-box p {
+            margin: 0;
+            color: #4c5866;
+            font-size: 1.05rem;
+        }
+
+        .faq-wrap {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--line);
+            padding: 1.15rem 0;
+        }
+
+        .faq-question {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: #111827;
+            text-align: left;
+            font-size: 1.04rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .faq-plus {
+            color: var(--primary);
+            font-size: 1.6rem;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .faq-answer {
+            display: none;
+            margin-top: 0.9rem;
+            color: var(--muted);
+            line-height: 1.8;
+            padding-right: 1rem;
+        }
+
+        .faq-item.active .faq-answer { display: block; }
+        .faq-item.active .faq-plus { transform: rotate(45deg); }
+
+        .contact-wrap {
+            max-width: 760px;
+            margin: 0 auto;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 2rem 1.5rem;
+        }
+
+        .field {
+            margin-bottom: 1rem;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 700;
+            color: #1d2430;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            border: 1px solid #dfe7ef;
+            border-radius: 8px;
+            padding: 0.9rem 0.95rem;
+            font: inherit;
+            background: #fff;
+            color: var(--text);
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13,95,185,0.12);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-note {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin: 0.35rem 0 1.2rem;
+            line-height: 1.7;
+        }
+
+        .privacy-box {
+            max-width: 980px;
+            margin: 0 auto;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 2rem 1.5rem;
+        }
+
+        .privacy-box h3 {
+            margin: 1.4rem 0 0.5rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .privacy-box h3:first-child { margin-top: 0; }
+
+        .privacy-box p {
+            margin: 0;
+            color: #4d5a62;
+            line-height: 1.8;
+        }
+
+        footer {
+            background: #111827;
+            color: #edf2f7;
+            padding: 3rem 0 1.2rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-grid h3 {
+            margin: 0 0 0.7rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-grid p,
+        .footer-grid a {
+            color: #d8e1eb;
+            margin: 0;
+            line-height: 1.9;
+        }
+
+        .footer-links {
+            display: grid;
+            gap: 0.3rem;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.12);
+            padding-top: 1rem;
+            text-align: center;
+            color: #b7c1ce;
+            font-size: 0.94rem;
+        }
+
+        @media (max-width: 700px) {
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem 0;
+            }
+            .nav-links {
+                gap: 0.8rem 1rem;
+            }
+            .btn {
+                width: 100%;
+            }
+            .cta-row {
+                flex-direction: column;
+            }
+            .hero {
+                padding-top: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="brand">PROLEGAL SOLUTIONS</div>
+                <div class="nav-links">
+                    <a href="#areas">Áreas de atuação</a>
+                    <a href="#como-funciona">Como funciona</a>
+                    <a href="#faq">Perguntas frequentes</a>
+                    <a href="#contacto">Contacto</a>
+                    <a href="#contacto" class="btn btn-primary">Marcar consulta</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container hero-inner">
+            <div class="eyebrow">| Advogados | Lawyer |</div>
+            <h1>PROLEGAL SOLUTIONS</h1>
+            <p class="hero-subtitle">O seu problema jurídico, tratado com rigor e discrição.</p>
+            <p class="hero-copy">Aconselhamento e representação para particulares e empresas. Advogados que o acompanham pessoalmente, do primeiro contacto à resolução.</p>
+            <div class="cta-row">
+                <a href="#contacto" class="btn btn-primary">Pedir consulta</a>
+                <a href="https://wa.me/351938357708?text=Olá%20ProLegal%20Solutions,%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener" class="btn btn-secondary">Falar por WhatsApp</a>
+            </div>
+            <div class="hero-meta">(+351) 938 357 708 · prolegalsolutions.pt@gmail.com</div>
+        </div>
+    </section>
+
+    <section id="areas">
+        <div class="container">
+            <h2 class="section-title">Áreas de atuação</h2>
+            <p class="section-lead">Acompanhamos particulares e empresas nas seguintes áreas.</p>
+            <div class="grid-areas">
+                <article class="card">
+                    <h3>Direito da Família</h3>
+                    <p>Divórcio, separação, guarda, regulação do poder paternal, pensões e acordos familiares com total discrição.</p>
+                </article>
+                <article class="card">
+                    <h3>Direito Laboral</h3>
+                    <p>Contratos de trabalho, despedimentos, reclamações laborais e questões relacionadas com a segurança social.</p>
+                </article>
+                <article class="card">
+                    <h3>Direito Civil</h3>
+                    <p>Contratos, responsabilidade civil, herança, propriedade e litígios imobiliários.</p>
+                </article>
+                <article class="card">
+                    <h3>Direito Comercial</h3>
+                    <p>Constituição de empresas, contratos comerciais, sociedades e aconselhamento estratégico empresarial.</p>
+                </article>
+                <article class="card">
+                    <h3>Direito Administrativo</h3>
+                    <p>Recursos administrativos, decisões da administração pública e questões de gestão documental e tributária.</p>
+                </article>
+                <article class="card">
+                    <h3>Consultoria Jurídica</h3>
+                    <p>Análise de situações jurídicas, prevenção de conflitos e aconselhamento completo para clientes e empresas.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="como-funciona">
+        <div class="container">
+            <h2 class="section-title">Quatro passos, total transparência</h2>
+            <p class="section-lead">Sem intermediários e sem linguagem complicada.</p>
+            <div class="steps">
+                <article class="step">
+                    <div class="step-number">1</div>
+                    <h3>Primeiro contacto</h3>
+                    <p>Envie uma mensagem por WhatsApp ou ligue. Ouvimos a sua situação com total confidencialidade.</p>
+                </article>
+                <article class="step">
+                    <div class="step-number">2</div>
+                    <h3>Análise do caso</h3>
+                    <p>Estudamos os factos e documentos e explicamos-lhe, de forma clara, as opções que tem.</p>
+                </article>
+                <article class="step">
+                    <div class="step-number">3</div>
+                    <h3>Estratégia e proposta</h3>
+                    <p>Apresentamos um plano de ação e honorários transparentes, sem surpresas.</p>
+                </article>
+                <article class="step">
+                    <div class="step-number">4</div>
+                    <h3>Acompanhamento</h3>
+                    <p>Representamo-lo do início ao fim, mantendo-o sempre informado.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <div class="quote-box">
+                <h3>Confiança constrói-se caso a caso</h3>
+                <p>
+                    Na ProLegal Solutions, cada cliente é acompanhado diretamente pelos advogados responsáveis.
+                    Acreditamos que bons advogados são, antes de mais, quem sabe ouvir. Por isso, dedicamos tempo
+                    a compreender a sua situação antes de propor qualquer caminho.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq">
+        <div class="container">
+            <h2 class="section-title">Perguntas frequentes</h2>
+            <p class="section-lead">As dúvidas mais comuns antes do primeiro contacto.</p>
+            <div class="faq-wrap">
+                <div class="faq-item active">
+                    <button type="button" class="faq-question">
+                        <span>Como posso marcar uma consulta?</span>
+                        <span class="faq-plus">+</span>
+                    </button>
+                    <div class="faq-answer">Pode contactar-nos por WhatsApp, telefone ou email, ou preencher o formulário deste site. Respondemos o mais depressa possível.</div>
+                </div>
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>A primeira conversa é confidencial?</span>
+                        <span class="faq-plus">+</span>
+                    </button>
+                    <div class="faq-answer">Sim. Tudo o que nos transmitir está protegido pelo sigilo profissional, desde o primeiro contacto.</div>
+                </div>
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Como são calculados os honorários?</span>
+                        <span class="faq-plus">+</span>
+                    </button>
+                    <div class="faq-answer">Depois de analisarmos o seu caso, apresentamos uma proposta de honorários clara e por escrito, antes de qualquer decisão da sua parte.</div>
+                </div>
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Que documentos devo reunir para a consulta?</span>
+                        <span class="faq-plus">+</span>
+                    </button>
+                    <div class="faq-answer">Contratos, notificações, cartas, emails e mensagens relacionados com a situação e um documento de identificação. Se não tiver tudo, venha na mesma e dizemos-lhe o que falta.</div>
+                </div>
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Atendem particulares e empresas?</span>
+                        <span class="faq-plus">+</span>
+                    </button>
+                    <div class="faq-answer">Sim. Acompanhamos particulares e empresas nas áreas de atuação indicadas neste site.</div>
+                </div>
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Posso enviar o meu caso por WhatsApp?</span>
+                        <span class="faq-plus">+</span>
+                    </button>
+                    <div class="faq-answer">Pode usar o WhatsApp para o primeiro contacto, com um resumo breve. Evite enviar dados sensíveis ou documentos nesta fase; trataremos de tudo com segurança na consulta.</div>
+                </div>
+                <div class="faq-item">
+                    <button type="button" class="faq-question">
+                        <span>Onde fica o escritório?</span>
+                        <span class="faq-plus">+</span>
+                    </button>
+                    <div class="faq-answer">Rua A Gazeta d'Oeiras 2 - 1.º C, 2780-171 Oeiras.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contacto">
+        <div class="container">
+            <h2 class="section-title">Fale connosco hoje</h2>
+            <p class="section-lead">Preencha os campos e abrimos o WhatsApp com a sua mensagem pronta a enviar. Resposta rápida e confidencial.</p>
+            <div class="contact-wrap">
+                <form id="contactForm">
+                    <div class="field">
+                        <label for="nome">Nome</label>
+                        <input id="nome" name="nome" type="text" required />
+                    </div>
+                    <div class="field">
+                        <label for="area">Área do seu caso</label>
+                        <select id="area" name="area" required>
+                            <option value="">Selecione uma área</option>
+                            <option value="Direito da Família">Direito da Família</option>
+                            <option value="Direito Laboral">Direito Laboral</option>
+                            <option value="Direito Civil">Direito Civil</option>
+                            <option value="Direito Comercial">Direito Comercial</option>
+                            <option value="Direito Administrativo">Direito Administrativo</option>
+                            <option value="Consultoria Jurídica">Consultoria Jurídica</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="descricao">Descreva brevemente a situação</label>
+                        <textarea id="descricao" name="descricao" required></textarea>
+                    </div>
+                    <div class="form-note">Não inclua dados sensíveis nesta fase. Falaremos de tudo em confidencialidade na consulta. Ao enviar, aceita a <a href="#privacidade" style="color: var(--primary);">Política de Privacidade</a>.</div>
+                    <button type="submit" class="btn btn-primary">Enviar por WhatsApp</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="privacidade">
+        <div class="container">
+            <h2 class="section-title">Política de Privacidade</h2>
+            <div class="privacy-box">
+                <h3>Responsável pelo tratamento</h3>
+                <p>ProLegal Solutions, Rua A Gazeta d'Oeiras 2 - 1.º C, 2780-171 Oeiras. Email: prolegalsolutions.pt@gmail.com.</p>
+
+                <h3>Que dados recolhemos e porquê</h3>
+                <p>Nome, área do caso e a descrição que escolher partilhar, apenas para responder ao seu pedido de contacto e, se avançar, preparar a consulta. O formulário não guarda dados no site: a mensagem é enviada por WhatsApp, que é operado por um prestador externo com as suas próprias regras. Pedimos que não envie dados sensíveis por esta via.</p>
+
+                <h3>Fundamento e conservação</h3>
+                <p>O tratamento assenta no seu pedido (diligências pré-contratuais) e no seu consentimento. Conservamos os dados pelo tempo necessário ao contacto e ao cumprimento das obrigações legais e deontológicas, incluindo o sigilo profissional.</p>
+
+                <h3>Cookies e terceiros</h3>
+                <p>Este site não usa cookies de rastreio nem ferramentas de análise e não envia dados para redes de publicidade.</p>
+
+                <h3>Os seus direitos</h3>
+                <p>Pode pedir acesso, retificação, apagamento, limitação, oposição e portabilidade dos seus dados, e retirar o consentimento a qualquer momento, por email. Tem também o direito de apresentar reclamação à Comissão Nacional de Proteção de Dados (cnpd.pt).</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-grid">
+            <div>
+                <h3>PROLEGAL SOLUTIONS</h3>
+                <p>| ADVOGADOS | LAWYER |</p>
+            </div>
+            <div>
+                <h3>Escritório</h3>
+                <p>(+351) 938 357 708<br>prolegalsolutions.pt@gmail.com<br>Rua A Gazeta d'Oeiras 2 - 1.º C<br>2780-171 Oeiras</p>
+            </div>
+            <div>
+                <h3>Links</h3>
+                <div class="footer-links">
+                    <a href="#areas">Áreas de atuação</a>
+                    <a href="#como-funciona">Como funciona</a>
+                    <a href="#faq">Perguntas frequentes</a>
+                    <a href="#contacto">Contacto</a>
+                    <a href="#privacidade">Política de Privacidade</a>
+                </div>
+            </div>
+        </div>
+        <div class="container footer-bottom">© 2026 ProLegal Solutions | Política de Privacidade</div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.faq-question').forEach((button) => {
+            button.addEventListener('click', () => {
+                const item = button.parentElement;
+                const isOpen = item.classList.contains('active');
+                document.querySelectorAll('.faq-item').forEach((faq) => faq.classList.remove('active'));
+                if (!isOpen) item.classList.add('active');
+            });
+        });
+
+        document.getElementById('contactForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const nome = document.getElementById('nome').value.trim();
+            const area = document.getElementById('area').value;
+            const descricao = document.getElementById('descricao').value.trim();
+            const message = `Olá ProLegal Solutions,%0A%0ANome: ${encodeURIComponent(nome)}%0AÁrea: ${encodeURIComponent(area)}%0A%0ADescrição:%0A${encodeURIComponent(descricao)}`;
+            window.open(`https://wa.me/351938357708?text=${message}`, '_blank');
+        });
+    </script>
+</body>
+</html>
