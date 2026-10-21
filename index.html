@@ -1,861 +1,777 @@
-<!DOCTYPE html>
-<html lang="pt">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ProLegal Solutions | Advocacia Premium</title>
-    <meta name="description" content="ProLegal Solutions — assessoria jurídica premium para particulares, famílias e empresas em Portugal." />
-    <meta name="theme-color" content="#0c1d2f" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-      @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLegal Solutions | Advogados em Oeiras</title>
+<meta name="description" content="Escritório de advogados em Oeiras. Aconselhamento jurídico rigoroso e confidencial. Ligue (+351) 938 357 708.">
+<meta property="og:title" content="ProLegal Solutions | Advogados em Oeiras">
+<meta property="og:description" content="Aconselhamento jurídico rigoroso, próximo e confidencial.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://formspree.io; object-src 'none'; base-uri 'self'; form-action 'none'">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1730;
+    --navy-2: #0f2140;
+    --navy-3: #13294d;
+    --gold: #c9a463;
+    --gold-hi: #f1d99a;
+    --gold-lo: #8a6a35;
+    --cream: #f4eee2;
+    --muted: #a9b2c4;
+    --line: rgba(201,164,99,.35);
+    --serif: "Cormorant Garamond", Georgia, serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ease: cubic-bezier(.2,.7,.1,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans); color: var(--cream); line-height: 1.7;
+    background-color: var(--navy);
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(40,70,120,.45), transparent 60%),
+      radial-gradient(ellipse at 50% 100%, rgba(0,0,0,.45), transparent 70%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; position: relative; }
 
-      @keyframes fadeInScale {
-        from { opacity: 0; transform: scale(0.96) translateY(18px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-      }
+  /* Gold helpers */
+  .gold-text {
+    background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-lo));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .gold-line { height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); border: 0; }
 
-      @keyframes slideInLeft {
-        from { opacity: 0; transform: translateX(-40px); }
-        to { opacity: 1; transform: translateX(0); }
-      }
+  /* Corner diagonal lines (as on the card) */
+  .corner { position: absolute; width: 300px; height: 300px; pointer-events: none; z-index: 0; }
+  .corner.tl { top: 0; left: 0; }
+  .corner.br { bottom: 0; right: 0; transform: rotate(180deg); }
+  .corner svg { width: 100%; height: 100%; }
 
-      @keyframes slideInRight {
-        from { opacity: 0; transform: translateX(40px); }
-        to { opacity: 1; transform: translateX(0); }
-      }
+  /* Progress */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 100%;
+    background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi));
+    transform-origin: 0 50%; transform: scaleX(0); z-index: 60;
+  }
 
-      :root {
-        --navy-950: #0a1627;
-        --navy-900: #0d1f35;
-        --navy-800: #14314f;
-        --navy-700: #1a3f68;
-        --gold-400: #d0b27b;
-        --gold-500: #c59d66;
-        --gold-600: #b88e52;
-        --line: rgba(13, 31, 53, 0.12);
-        --text: #132335;
-        --muted: #5c6c7c;
-        --success: #1a9a73;
-        --shadow-lg: 0 36px 80px rgba(9, 26, 42, 0.14);
-        --shadow-md: 0 22px 52px rgba(10, 22, 39, 0.08);
-        --container: min(1180px, calc(100% - 36px));
-      }
+  /* Header */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    transition: background .4s var(--ease), box-shadow .4s var(--ease);
+  }
+  header.scrolled {
+    background: rgba(10,23,48,.88); backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .nav { display: flex; align-items: center; justify-content: space-between; height: 92px; transition: height .4s var(--ease); }
+  header.scrolled .nav { height: 74px; }
+  .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+  .brand .mark { width: 42px; height: 42px; flex: 0 0 42px; }
+  .brand .mark svg { width: 100%; height: 100%; }
+  .brand .name { font-family: var(--serif); font-size: 1.5rem; font-weight: 600; letter-spacing: .04em; color: var(--gold-hi); text-transform: uppercase; white-space: nowrap; }
+  nav.links { display: flex; align-items: center; gap: 38px; }
+  nav.links a {
+    text-decoration: none; font-size: .78rem; letter-spacing: .22em; text-transform: uppercase; color: var(--cream); opacity: .8;
+    position: relative; transition: opacity .3s, color .3s;
+  }
+  nav.links a::after {
+    content: ""; position: absolute; left: 0; bottom: -8px; width: 0; height: 1px; background: var(--gold);
+    transition: width .4s var(--ease);
+  }
+  nav.links a:hover { opacity: 1; color: var(--gold-hi); }
+  nav.links a:hover::after { width: 100%; }
 
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
-      body {
-        margin: 0;
-        background: #f7f4f0;
-        color: var(--text);
-        font-family: 'Inter', Arial, sans-serif;
-        font-weight: 400;
-        line-height: 1.7;
-        overflow-x: hidden;
-      }
-      a { color: inherit; text-decoration: none; }
-      img { display: block; max-width: 100%; }
-      button, input, select, textarea { font: inherit; }
-      .container { width: var(--container); margin: 0 auto; }
-      .section { padding: 110px 0; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 15px 32px; font-size: .78rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase;
+    text-decoration: none; border: 1px solid var(--gold); cursor: pointer; white-space: nowrap;
+    transition: transform .35s var(--ease), background .35s, color .35s, box-shadow .35s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-gold { background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo)); color: var(--navy); border-color: transparent; }
+  .btn-gold:hover { box-shadow: 0 14px 34px -12px rgba(201,164,99,.7); }
+  .btn-line { background: transparent; color: var(--gold-hi); }
+  .btn-line:hover { background: var(--gold); color: var(--navy); }
+  .btn-sm { padding: 12px 22px; font-size: .7rem; }
 
-      .eyebrow {
-        display: inline-block;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: var(--gold-500);
-      }
+  /* Hero */
+  .hero {
+    position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    text-align: center; overflow: hidden;
+  }
+  .hero-inner { position: relative; z-index: 2; padding: 150px 0 130px; }
+  .hero .logo-big { width: 170px; height: 170px; margin: 0 auto 34px; }
+  .hero .logo-big svg { width: 100%; height: 100%; filter: drop-shadow(0 12px 24px rgba(0,0,0,.45)); }
+  .hero .logo-big svg { animation: float 7s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .hero .brand-title {
+    font-family: var(--serif); font-weight: 500; text-transform: uppercase;
+    font-size: clamp(2.4rem, 6vw, 4.6rem); letter-spacing: .08em; line-height: 1;
+  }
+  .tagline {
+    margin: 26px auto 0; display: flex; align-items: center; justify-content: center; gap: 16px;
+    font-size: .8rem; letter-spacing: .34em; text-transform: uppercase; color: var(--gold-hi);
+  }
+  .tagline::before, .tagline::after { content: ""; width: 34px; height: 1px; background: var(--gold); }
+  .hero h1 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 4.4vw, 3.3rem);
+    line-height: 1.18; margin: 54px auto 0; max-width: 820px; color: var(--cream);
+  }
+  .hero h1 em { font-style: italic; color: var(--gold-hi); }
+  .hero p.lead { margin: 22px auto 0; max-width: 580px; font-size: 1.02rem; font-weight: 300; color: var(--muted); }
+  .cta-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; margin-top: 44px; }
+  .scroll-hint {
+    position: absolute; bottom: 34px; left: 50%; transform: translateX(-50%); z-index: 2;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    font-size: .64rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
+  }
+  .scroll-hint i { width: 1px; height: 48px; background: linear-gradient(var(--gold), transparent); animation: drip 2.4s var(--ease) infinite; }
+  @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
 
-      .title {
-        margin: 16px 0 18px;
-        font-size: clamp(2.6rem, 5vw, 4.4rem);
-        font-weight: 700;
-        color: var(--navy-950);
-        letter-spacing: -0.02em;
-        line-height: 1.02;
-      }
+  /* Sections */
+  section { padding: 150px 0; position: relative; overflow: hidden; }
+  .label {
+    display: inline-flex; align-items: center; gap: 16px; font-size: .72rem; letter-spacing: .3em;
+    text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 26px;
+  }
+  .label::before, .label::after { content: ""; width: 26px; height: 1px; background: var(--gold); }
+  h2 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(2.3rem, 4.4vw, 3.6rem);
+    line-height: 1.1; color: var(--cream);
+  }
+  h2 em { font-style: italic; color: var(--gold-hi); }
+  .center { text-align: center; }
+  .center .label { justify-content: center; }
 
-      .subtitle {
-        margin: 0;
-        color: var(--muted);
-        font-size: 1.08rem;
-        max-width: 650px;
-      }
+  /* Sobre */
+  .about { background: linear-gradient(180deg, var(--navy-2), var(--navy)); }
+  .about-grid { display: grid; grid-template-columns: 1fr; gap: 110px; align-items: center; max-width: 820px; }
+  .about-visual { position: relative; z-index: 0; }
+  .about-visual .frame { position: relative; padding: 18px; border: 1px solid var(--line); }
+  .photo-panel {
+    width: 100%; aspect-ratio: 4/5; display: grid; place-items: center;
+    background: radial-gradient(ellipse at 50% 35%, #1b3262, #0c1a36 70%);
+    box-shadow: inset 0 0 80px rgba(0,0,0,.45);
+  }
+  .photo-panel svg { width: 52%; height: auto; filter: drop-shadow(0 18px 30px rgba(0,0,0,.5)); }
+  .about-visual img {
+    width: 100%; aspect-ratio: 4/5; object-fit: cover; filter: grayscale(.35) contrast(1.05) brightness(.9);
+    transform: translateY(var(--py, 0px));
+  }
+  .about-body p { color: var(--muted); margin-bottom: 22px; font-size: 1.02rem; }
+  .about-body p.intro { color: var(--cream); font-size: 1.2rem; font-weight: 300; }
+  .quote-block {
+    margin-top: 46px; padding-top: 34px; border-top: 1px solid var(--line);
+    font-family: var(--serif); font-style: italic; font-size: 2rem; line-height: 1.3; color: var(--gold-hi);
+  }
 
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.7rem;
-        border: 1px solid transparent;
-        border-radius: 999px;
-        padding: 1rem 1.6rem;
-        font-weight: 700;
-        font-size: 0.94rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-      .btn:hover { transform: translateY(-2px); }
-      .btn-primary {
-        color: var(--navy-950);
-        background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
-        box-shadow: 0 20px 35px rgba(197, 157, 102, 0.32);
-      }
-      .btn-secondary {
-        border-color: rgba(10, 22, 39, 0.14);
-        background: rgba(255,255,255,0.3);
-        color: var(--navy-950);
-      }
-      .btn-ghost {
-        background: rgba(255,255,255,0.1);
-        border-color: rgba(255,255,255,0.2);
-        color: #fff;
-      }
+  /* Como funciona */
+  .how { background: var(--navy); }
+  .section-head { max-width: 760px; margin: 0 auto 96px; text-align: center; }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); position: relative; }
+  .steps .rail { position: absolute; top: 40px; left: 12%; right: 12%; height: 1px; background: var(--line); }
+  .steps .rail b {
+    position: absolute; inset: 0; background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi));
+    transform-origin: 0 50%; transform: scaleX(0); transition: transform 1.8s var(--ease);
+  }
+  .steps.in .rail b { transform: scaleX(1); }
+  .step { text-align: center; padding: 0 28px; position: relative; }
+  .step .dot {
+    width: 80px; height: 80px; margin: 0 auto; border-radius: 50%;
+    background: var(--navy-3); border: 1px solid var(--gold);
+    display: grid; place-items: center; font-family: var(--serif); font-size: 1.7rem; color: var(--gold-hi);
+    box-shadow: 0 0 0 10px var(--navy), 0 0 40px -6px rgba(201,164,99,.35);
+    transition: background .5s, color .5s, transform .5s var(--ease);
+  }
+  .step:hover .dot { background: var(--gold); color: var(--navy); transform: translateY(-4px); }
+  .step h3 { font-family: var(--serif); font-weight: 500; font-size: 1.6rem; color: var(--cream); margin: 36px 0 12px; }
+  .step p { color: var(--muted); font-size: .95rem; }
 
-      .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 60;
-        background: rgba(247,244,240,0.85);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--line);
-      }
+  /* Contacto */
+  .contact { background: linear-gradient(180deg, var(--navy), var(--navy-2)); }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; position: relative; z-index: 1; }
+  .contact-lead { margin-top: 24px; color: var(--muted); font-size: 1.02rem; max-width: 460px; font-weight: 300; }
+  .contact-cta { margin-top: 44px; display: flex; flex-wrap: wrap; gap: 16px; }
+  .contact-card { border: 1px solid var(--line); padding: 14px 44px; background: rgba(10,23,48,.5); backdrop-filter: blur(6px); }
+  .contact-item { display: flex; gap: 22px; align-items: center; padding: 26px 0; border-bottom: 1px solid rgba(201,164,99,.18); }
+  .contact-item:last-child { border-bottom: none; }
+  .contact-item .ico {
+    flex: 0 0 48px; height: 48px; border: 1px solid var(--gold); border-radius: 50%;
+    display: grid; place-items: center; color: var(--gold-hi); font-size: 1rem;
+  }
+  .contact-item small { display: block; font-size: .66rem; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+  .contact-item a { color: var(--cream); text-decoration: none; font-size: 1.05rem; transition: color .3s; }
+  .contact-item a:hover { color: var(--gold-hi); }
 
-      .nav {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        min-height: 80px;
-        gap: 20px;
-      }
+  /* Footer */
+  footer { background: #060f20; border-top: 1px solid var(--line); padding: 40px 0; font-size: .82rem; color: var(--muted); }
+  .foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; }
+  .foot .brand .name { font-size: 1.1rem; }
+  .foot .brand .mark { width: 34px; height: 34px; flex-basis: 34px; }
+  .foot-links { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; }
+  .foot a { color: var(--gold-hi); text-decoration: none; letter-spacing: .08em; transition: opacity .3s; }
+  .foot a:hover { opacity: .7; }
 
-      .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        color: var(--navy-950);
-        font-weight: 800;
-      }
+  /* Floating WhatsApp */
+  .wa-float {
+    position: fixed; right: 26px; bottom: 26px; z-index: 40;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo)); color: var(--navy);
+    display: grid; place-items: center; text-decoration: none; font-size: 1.3rem;
+    box-shadow: 0 14px 30px -10px rgba(0,0,0,.6);
+    opacity: 0; transform: translateY(20px); pointer-events: none; transition: opacity .5s, transform .5s var(--ease);
+  }
+  .wa-float.show { opacity: 1; transform: none; pointer-events: auto; }
+  .wa-float:hover { transform: scale(1.07); }
 
-      .brand-mark {
-        width: 42px;
-        height: 42px;
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
-        color: var(--gold-400);
-        font-size: 1.1rem;
-      }
+  /* Reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(36px); transition: opacity 1.1s var(--ease), transform 1.1s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+  .d1 { transition-delay: .12s; } .d2 { transition-delay: .24s; } .d3 { transition-delay: .36s; }
+  .split-line { display: block; overflow: hidden; padding-bottom: .05em; }
+  .split-line > span { display: inline-block; transform: translateY(105%); transition: transform 1.2s var(--ease); }
+  .split-line.in > span { transform: none; }
 
-      .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 26px;
-        color: var(--muted);
-        font-size: 0.92rem;
-        font-weight: 600;
-      }
-      .nav-links a { transition: color 0.2s ease; }
-      .nav-links a:hover { color: var(--navy-950); }
-      .nav-actions { display: flex; align-items: center; gap: 12px; }
-      .menu-toggle {
-        display: none;
-        border: 0;
-        background: transparent;
-        color: var(--navy-950);
-        font-size: 1.65rem;
-        cursor: pointer;
-      }
+  /* Pedido de consulta */
+  .request { background: var(--navy-2); }
+  .req-form {
+    max-width: 840px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 40px 44px;
+    border: 1px solid var(--line); padding: 60px; background: rgba(10,23,48,.55);
+  }
+  .field { display: flex; flex-direction: column; gap: 10px; }
+  .field.full, .form-foot { grid-column: 1 / -1; }
+  .field label { font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+  .field input, .field select, .field textarea {
+    background: transparent; border: 0; border-bottom: 1px solid rgba(201,164,99,.4);
+    color: var(--cream); font: inherit; font-size: 1rem; padding: 10px 0; outline: none;
+    border-radius: 0; transition: border-color .3s; width: 100%;
+  }
+  .field select option { background: var(--navy); color: var(--cream); }
+  .field textarea { resize: vertical; min-height: 120px; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-bottom-color: var(--gold-hi); }
+  .field.invalid input, .field.invalid select, .field.invalid textarea { border-bottom-color: #e8a79a; }
+  .form-foot { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .err { color: #e8a79a; font-size: .88rem; min-height: 1.2em; }
+  .err.ok { color: var(--gold-hi); }
+  .field[hidden] { display: none; }
 
-      .hero {
-        position: relative;
-        overflow: hidden;
-        background: radial-gradient(circle at top left, rgba(197,157,102,0.15), transparent 26%), linear-gradient(135deg, #f3eee7 0%, #f8f6f3 40%, #edf4f9 100%);
-      }
-      .hero::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
-        background-size: 34px 34px;
-        mask-image: radial-gradient(circle at center, black 58%, transparent 100%);
-        opacity: 0.3;
-        pointer-events: none;
-      }
-      .hero-inner {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
-        align-items: center;
-        gap: 48px;
-        padding: 90px 0 80px;
-      }
-      .hero-content { position: relative; z-index: 1; }
-      .hero-title {
-        margin: 16px 0 18px;
-        font-size: clamp(3.4rem, 6vw, 6rem);
-        font-weight: 700;
-        color: var(--navy-950);
-        letter-spacing: -0.03em;
-        line-height: 1.05;
-      }
-      .hero-subtitle {
-        max-width: 620px;
-        margin: 0;
-        color: var(--muted);
-        font-size: 1.12rem;
-        line-height: 1.8;
-      }
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        margin-top: 30px;
-      }
-      .hero-stats {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
-        margin-top: 38px;
-      }
-      .stat-item { padding-top: 16px; border-top: 1px solid rgba(10,22,39,0.1); }
-      .stat-item strong {
-        display: block;
-        color: var(--navy-950);
-        font-size: clamp(1.55rem, 2vw, 2.1rem);
-        font-weight: 700;
-        line-height: 1.1;
-      }
-      .stat-item span {
-        display: block;
-        margin-top: 6px;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-      .hero-card-wrap { position: relative; z-index: 1; display: flex; justify-content: center; }
-      .hero-card-shell {
-        background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
-        border: 1px solid rgba(13,31,53,0.08);
-        border-radius: 32px;
-        padding: 18px;
-        box-shadow: var(--shadow-lg);
-        width: 100%;
-      }
-      .hero-card {
-        background: linear-gradient(160deg, var(--navy-900) 0%, var(--navy-800) 35%, #d9bf90 100%);
-        border-radius: 28px;
-        padding: 26px;
-        color: #edf5ff;
-      }
-      .mini-panel {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 18px;
-        padding: 16px 18px;
-        margin-bottom: 14px;
-      }
-      .mini-panel:last-child { margin-bottom: 0; }
-      .mini-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        color: rgba(255,255,255,0.7);
-        font-size: 0.65rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        font-weight: 600;
-      }
-      .pulse {
-        display: inline-block;
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        background: #83deb1;
-        box-shadow: 0 0 0 8px rgba(131,222,177,0.16);
-      }
-      .mini-value {
-        margin-top: 10px;
-        font-weight: 700;
-        font-size: clamp(1.4rem, 2vw, 2.2rem);
-        line-height: 1.15;
-        letter-spacing: -0.02em;
-      }
+  /* Consentimento e opções */
+  .field input[type="radio"], .field input[type="checkbox"] { width: auto; border: 0; padding: 0; accent-color: var(--gold); }
+  fieldset.radios { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .radios legend { font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; padding: 0; }
+  .opt { display: inline-flex; align-items: center; gap: 12px; color: var(--cream); cursor: pointer; margin-right: 32px; font-size: 1rem; }
+  .opt input { width: 16px; height: 16px; }
+  .consent { flex-direction: row; align-items: flex-start; gap: 14px; cursor: pointer; color: var(--muted); font-size: .92rem; line-height: 1.6; }
+  .consent input { margin-top: 6px; width: 18px; height: 18px; flex: 0 0 18px; }
+  .consent em { display: block; color: var(--cream); font-style: normal; margin-top: 6px; }
+  .consent small { display: block; margin-top: 8px; font-size: .84rem; }
+  .consent a, .privacy a { color: var(--gold-hi); }
+  .field.invalid .radios legend, .field.invalid.consent span { color: #e8a79a; }
 
-      .trust-bar {
-        background: rgba(255,255,255,0.6);
-        border-top: 1px solid var(--line);
-        border-bottom: 1px solid var(--line);
-      }
-      .trust-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
-        padding: 18px 0;
-        text-align: center;
-      }
-      .trust-grid span {
-        color: var(--muted);
-        font-size: 0.8rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        font-weight: 700;
-      }
+  /* Política de Privacidade */
+  .privacy { background: var(--navy); }
+  .narrow { max-width: 860px; }
+  .privacy .updated { color: var(--muted); font-size: .9rem; margin-top: 14px; }
+  .policy { margin-top: 56px; }
+  .policy h3 { font-family: var(--serif); font-weight: 500; font-size: 1.6rem; color: var(--gold-hi); margin: 40px 0 12px; }
+  .policy p, .policy li { color: var(--muted); font-size: .98rem; }
+  .policy ul { padding-left: 20px; margin-top: 8px; }
+  .policy li { margin-bottom: 8px; }
+  .policy strong { color: var(--cream); font-weight: 500; }
+  .privacy .label { margin-bottom: 22px; }
 
-      .about-grid {
-        display: grid;
-        grid-template-columns: 0.9fr 1.1fr;
-        gap: 34px;
-        align-items: center;
-      }
-      .showcase-panel {
-        min-height: 540px;
-        padding: 32px 28px;
-        border-radius: 32px;
-        background: linear-gradient(135deg, #0a1627 0%, #16375a 100%);
-        box-shadow: var(--shadow-lg);
-        color: #edf6ff;
-      }
-      .showcase-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 999px;
-        padding: 8px 14px;
-        font-size: 0.72rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        font-weight: 700;
-        color: #edf6ff;
-      }
-      .showcase-panel .title {
-        margin-top: 18px;
-        font-size: clamp(2.8rem, 4vw, 3.8rem);
-        color: #fff;
-        letter-spacing: -0.02em;
-      }
-      .showcase-panel .subtitle { color: rgba(255,255,255,0.8); }
-      .showcase-box {
-        margin-top: 18px;
-        padding: 22px 20px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 18px;
-      }
-      .showcase-box h3 { margin: 0 0 10px; font-size: 1.15rem; font-weight: 700; }
-      .showcase-box p { margin: 0; color: rgba(255,255,255,0.8); }
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 70px; }
+    .steps { grid-template-columns: 1fr 1fr; row-gap: 70px; }
+    .steps .rail { display: none; }
+    section { padding: 120px 0; }
+    .about-visual { max-width: 520px; }
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 0 22px; }
+    nav.links { display: none; }
+    .nav { height: 76px; gap: 12px; }
+    header.scrolled .nav { height: 64px; }
+    .brand { gap: 10px; min-width: 0; }
+    .brand .name { font-size: 1.05rem; letter-spacing: .02em; }
+    .brand .mark { width: 34px; height: 34px; flex-basis: 34px; }
+    .nav .btn-sm { display: none; }
+    .corner { width: 170px; height: 170px; }
+    .hero-inner { padding: 130px 0 120px; }
+    .hero .logo-big { width: 130px; height: 130px; }
+    .steps { grid-template-columns: 1fr; }
+    .contact-card { padding: 6px 22px; }
+    .btn { width: 100%; }
+    .cta-row .btn, .contact-cta .btn { width: 100%; }
+    section { padding: 96px 0; }
+    .section-head { margin-bottom: 64px; }
+    .foot { justify-content: center; text-align: center; }
+    .foot-links { justify-content: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal, .split-line > span { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
 
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 22px;
-      }
-      .feature-card {
-        background: rgba(255,255,255,0.75);
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        padding: 28px 24px;
-        box-shadow: 0 14px 40px rgba(10,22,39,0.04);
-      }
-      .feature-icon {
-        width: 54px;
-        height: 54px;
-        display: grid;
-        place-items: center;
-        border-radius: 14px;
-        background: rgba(197,157,102,0.12);
-        color: var(--navy-900);
-        font-size: 1.3rem;
-      }
-      .feature-card h3 { margin: 18px 0 8px; font-size: 1.3rem; font-weight: 700; }
-      .feature-card p { margin: 0; color: var(--muted); }
+<!-- Reusable gold scale (from the business card) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7e3ad"/>
+      <stop offset=".5" stop-color="#c9a463"/>
+      <stop offset="1" stop-color="#7d5d2c"/>
+    </linearGradient>
+    <symbol id="scale" viewBox="0 0 200 200">
+      <g fill="url(#gold)">
+        <circle cx="100" cy="20" r="10"/>
+        <path d="M28 50 Q44 36 62 48 Q80 60 100 54 Q120 60 138 48 Q156 36 172 50 Q160 66 140 60 Q120 68 100 66 Q80 68 60 60 Q40 66 28 50Z"/>
+        <ellipse cx="100" cy="68" rx="11" ry="15"/>
+        <path d="M93 80 L107 80 L112 150 L88 150Z"/>
+        <path d="M70 150 L130 150 L124 162 L76 162Z"/>
+        <rect x="58" y="162" width="84" height="11" rx="1"/>
+        <path d="M6 118 L62 118 Q58 146 34 146 Q10 146 6 118Z"/>
+        <path d="M138 118 L194 118 Q190 146 166 146 Q142 146 138 118Z"/>
+      </g>
+      <g stroke="url(#gold)" stroke-width="2.2" stroke-linecap="round" fill="none">
+        <path d="M34 56 L12 118 M34 56 L60 118"/>
+        <path d="M166 56 L140 118 M166 56 L188 118"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
 
-      .services-grid, .steps-grid, .testimonial-grid { display: grid; gap: 24px; }
-      .services-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .service-card {
-        background: rgba(255,255,255,0.75);
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        padding: 28px 24px;
-        box-shadow: 0 14px 40px rgba(10,22,39,0.04);
-      }
-      .service-card h3 { margin: 18px 0 10px; font-size: 1.35rem; font-weight: 700; }
-      .service-card p { margin: 0; color: var(--muted); }
-      .service-list { list-style: none; padding: 0; margin: 18px 0 0; }
-      .service-list li {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 10px;
-        color: var(--muted);
-      }
-      .service-list li::before {
-        content: "✓";
-        color: var(--success);
-        font-weight: 700;
-      }
+<div class="progress" id="progress"></div>
 
-      .numbers-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 18px;
-        margin-top: 34px;
-      }
-      .number-card {
-        background: rgba(255,255,255,0.75);
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        padding: 24px 18px;
-      }
-      .number-card strong { display: block; font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
-      .number-card span { color: var(--muted); }
+<header id="site-header">
+  <div class="wrap nav">
+    <a href="#top" class="brand">
+      <span class="mark"><svg viewBox="0 0 200 200"><use href="#scale"/></svg></span>
+      <span class="name">ProLegal Solutions</span>
+    </a>
+    <nav class="links">
+      <a href="#sobre">Sobre</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <a class="btn btn-gold btn-sm" href="https://wa.me/351938357708?text=Ol%C3%A1%2C%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener">Marcar consulta</a>
+  </div>
+</header>
 
-      .steps-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .step-card {
-        background: rgba(255,255,255,0.78);
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        padding: 28px 24px;
-      }
-      .step-number {
-        width: 48px;
-        height: 48px;
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: rgba(197,157,102,0.12);
-        font-weight: 700;
-        color: var(--navy-950);
-      }
-      .step-card h3 { margin: 18px 0 10px; font-size: 1.3rem; font-weight: 700; }
-      .step-card p { margin: 0; color: var(--muted); }
+<main id="top">
 
-      .testimonials-wrap {
-        background: rgba(255,255,255,0.35);
-        border-top: 1px solid var(--line);
-        border-bottom: 1px solid var(--line);
-      }
-      .testimonial-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .testimonial-card {
-        background: #fff;
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        padding: 28px 22px;
-        box-shadow: 0 14px 40px rgba(10,22,39,0.04);
-      }
-      .stars { margin-bottom: 16px; color: var(--gold-500); letter-spacing: 0.2em; }
-      .testimonial-card p { margin: 0; color: var(--muted); }
+  <!-- Hero -->
+  <div class="hero" id="hero">
+    <div class="corner tl"><svg viewBox="0 0 300 300" fill="none" stroke="url(#gold)" stroke-width="1.6"><path d="M0 230 L230 0"/><path d="M0 200 L200 0"/><path d="M0 170 L170 0"/></svg></div>
+    <div class="corner br"><svg viewBox="0 0 300 300" fill="none" stroke="url(#gold)" stroke-width="1.6"><path d="M0 230 L230 0"/><path d="M0 200 L200 0"/><path d="M0 170 L170 0"/></svg></div>
 
-      .cta-wrap {
-        background: linear-gradient(135deg, #0a1627 0%, #143153 100%);
-        border-radius: 32px;
-        padding: 56px 28px;
-        box-shadow: var(--shadow-lg);
-        text-align: center;
-      }
-      .cta-wrap .title {
-        margin-top: 16px;
-        font-size: clamp(2.6rem, 5vw, 4rem);
-        color: #fff;
-      }
-      .cta-wrap .subtitle {
-        max-width: 740px;
-        margin: 12px auto 0;
-        color: rgba(255,255,255,0.75);
-      }
-      .cta-actions {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 14px;
-        margin-top: 28px;
-      }
-      .btn-ghost { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; }
+    <div class="wrap hero-inner">
+      <div class="logo-big reveal"><svg viewBox="0 0 200 200"><use href="#scale"/></svg></div>
+      <div class="brand-title">
+        <span class="split-line"><span class="gold-text">ProLegal Solutions</span></span>
+      </div>
+      <div class="tagline reveal d1">Advogados · Lawyer</div>
+      <h1 class="reveal d2">O seu problema jurídico, tratado com <em>rigor</em> e discrição.</h1>
+      <p class="lead reveal d2">Aconselhamento e representação para particulares e empresas. Uma advogada que o acompanha pessoalmente, do primeiro contacto à resolução.</p>
+      <div class="cta-row reveal d3">
+        <a class="btn btn-gold" href="https://wa.me/351938357708?text=Ol%C3%A1%2C%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener">Falar por WhatsApp</a>
+        <a class="btn btn-line" href="mailto:prolegalsolutions.pt@gmail.com">Enviar email</a>
+      </div>
+    </div>
+    <div class="scroll-hint"><i></i>Scroll</div>
+  </div>
 
-      .footer { padding: 36px 0 58px; }
-      .footer-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        padding-top: 28px;
-        border-top: 1px solid var(--line);
-        color: var(--muted);
-      }
-      .socials { display: flex; align-items: center; gap: 12px; }
-      .socials a {
-        width: 38px;
-        height: 38px;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background: rgba(10,22,39,0.04);
-        color: var(--navy-950);
-        transition: background 0.2s ease, transform 0.2s ease;
-      }
-      .socials a:hover {
-        background: rgba(10,22,39,0.1);
-        transform: translateY(-2px);
-      }
+  <!-- Sobre -->
+  <section class="about" id="sobre">
+    <div class="corner tl" style="opacity:.6"><svg viewBox="0 0 300 300" fill="none" stroke="url(#gold)" stroke-width="1.2"><path d="M0 230 L230 0"/><path d="M0 200 L200 0"/></svg></div>
+    <div class="wrap about-grid">
+      <div class="about-body">
+        <span class="label reveal">Sobre</span>
+        <h2 class="reveal d1">Confiança constrói-se <em>caso a caso.</em></h2>
+        <div style="height:40px"></div>
+        <p class="intro reveal d1">Na ProLegal Solutions, cada cliente é acompanhado diretamente pela advogada responsável. Sem intermediários, sem linguagem complicada.</p>
+        <p class="reveal d2">Acreditamos que um bom advogado é, antes de mais, alguém que ouve. Por isso dedicamos tempo a compreender a sua situação antes de propor qualquer caminho.</p>
+        <p class="quote-block reveal d3">“Rigor técnico, proximidade humana.”</p>
+      </div>
+    </div>
+  </section>
 
-      [data-animate] {
-        opacity: 0;
-        transform: translateY(32px);
-      }
-      [data-animate].animate-in-1 { animation: fadeInUp 0.8s ease-out forwards; }
-      [data-animate].animate-in-2 { animation: fadeInScale 0.9s ease-out forwards; }
-      [data-animate].animate-in-3 { animation: slideInLeft 0.8s ease-out forwards; }
-      [data-animate].animate-in-4 { animation: slideInRight 0.8s ease-out forwards; }
-
-      @media (max-width: 980px) {
-        .hero-inner, .about-grid, .services-grid, .steps-grid, .testimonial-grid, .numbers-grid, .features-grid {
-          grid-template-columns: 1fr;
-        }
-        .nav-links {
-          position: absolute;
-          top: 80px;
-          left: 18px;
-          right: 18px;
-          display: none;
-          flex-direction: column;
-          align-items: flex-start;
-          padding: 18px 20px;
-          background: rgba(255,255,255,0.97);
-          border: 1px solid var(--line);
-          border-radius: 18px;
-          box-shadow: 0 18px 50px rgba(10,22,39,0.08);
-        }
-        .nav-links.open { display: flex; }
-        .menu-toggle { display: block; }
-        .nav-actions .btn-secondary { display: none; }
-      }
-
-      @media (max-width: 640px) {
-        .section { padding: 82px 0; }
-        .hero-inner { padding-top: 62px; padding-bottom: 62px; }
-        .hero-stats, .trust-grid { grid-template-columns: 1fr; }
-        .footer-row { flex-direction: column; text-align: center; }
-      }
-    </style>
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="container nav">
-        <a href="#top" class="brand" aria-label="ProLegal Solutions home">
-          <span class="brand-mark"><i class="fa-solid fa-scale-balanced"></i></span>
-          ProLegal Solutions
-        </a>
-
-        <nav class="nav-links" id="navLinks" aria-label="Menu principal">
-          <a href="#sobre">Sobre</a>
-          <a href="#servicos">Serviços</a>
-          <a href="#areas">Áreas</a>
-          <a href="#processo">Processo</a>
-          <a href="#contactos">Contactos</a>
-        </nav>
-
-        <div class="nav-actions">
-          <a href="#contactos" class="btn btn-secondary">Agendar consulta</a>
-          <button type="button" class="menu-toggle" id="menuToggle" aria-label="Abrir menu">
-            <i class="fa-solid fa-bars"></i>
-          </button>
+  <!-- Como funciona -->
+  <section class="how" id="como-funciona">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="label reveal">Como funciona</span>
+        <h2 class="reveal d1">Quatro passos, <em>total transparência.</em></h2>
+      </div>
+      <div class="steps" id="steps">
+        <div class="rail"><b></b></div>
+        <div class="step reveal">
+          <div class="dot">I</div>
+          <h3>Primeiro contacto</h3>
+          <p>Envie uma mensagem por WhatsApp ou ligue. Ouvimos a sua situação com total confidencialidade.</p>
+        </div>
+        <div class="step reveal d1">
+          <div class="dot">II</div>
+          <h3>Análise do caso</h3>
+          <p>Estudamos os factos e documentos e explicamos-lhe, de forma clara, as opções que tem.</p>
+        </div>
+        <div class="step reveal d2">
+          <div class="dot">III</div>
+          <h3>Estratégia e proposta</h3>
+          <p>Apresentamos um plano de ação e honorários transparentes, sem surpresas.</p>
+        </div>
+        <div class="step reveal d3">
+          <div class="dot">IV</div>
+          <h3>Acompanhamento</h3>
+          <p>Representamo-lo do início ao fim, mantendo-o sempre informado.</p>
         </div>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <main id="top">
-      <section class="hero">
-        <div class="container hero-inner">
-          <div class="hero-content" data-animate>
-            <span class="eyebrow">Assessoria jurídica premium</span>
-            <h1 class="hero-title">Protegemos o teu futuro com estratégia, rigor e presença.</h1>
-            <p class="hero-subtitle">A ProLegal Solutions oferece apoio jurídico personalizado para pessoas físicas, famílias e empresas que querem decidir com confiança e agir com segurança.</p>
-
-            <div class="hero-actions">
-              <a href="#contactos" class="btn btn-primary">Solicitar consultoria</a>
-              <a href="#servicos" class="btn btn-secondary">Ver serviços</a>
-            </div>
-
-            <div class="hero-stats">
-              <div class="stat-item">
-                <strong>+12 anos</strong>
-                <span>de experiência</span>
-              </div>
-              <div class="stat-item">
-                <strong>1.200+</strong>
-                <span>casos assessorados</span>
-              </div>
-              <div class="stat-item">
-                <strong>98%</strong>
-                <span>satisfação</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="hero-card-wrap" data-animate>
-            <div class="hero-card-shell">
-              <div class="hero-card">
-                <div class="mini-panel">
-                  <div class="mini-top">
-                    <span>Atendimento</span>
-                    <span class="pulse"></span>
-                  </div>
-                  <div class="mini-value">Resposta em 24h</div>
-                </div>
-                <div class="mini-panel">
-                  <div class="mini-top">
-                    <span>Especialidades</span>
-                    <span>Premium</span>
-                  </div>
-                  <div class="mini-value">Civil • Laboral • Empresarial</div>
-                </div>
-                <div class="mini-panel">
-                  <div class="mini-top">
-                    <span>Disponibilidade</span>
-                    <span>Online</span>
-                  </div>
-                  <div class="mini-value">Portugal</div>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- Pedido de consulta -->
+  <section class="request" id="pedido">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="label reveal">Pedido de consulta</span>
+        <h2 class="reveal d1">Descreva-nos <em>brevemente</em> o seu caso.</h2>
+        <p class="contact-lead reveal d2" style="margin-left:auto;margin-right:auto">Ao enviar, abre-se o WhatsApp com a sua mensagem já preenchida.</p>
+      </div>
+      <form id="request-form" class="req-form reveal d2" novalidate>
+        <div class="field">
+          <label for="f-name">Nome</label>
+          <input id="f-name" name="name" type="text" autocomplete="name" maxlength="120" required>
         </div>
-      </section>
+        <div class="field">
+          <label for="f-area">Área do Direito em questão</label>
+          <select id="f-area" name="area" required>
+            <option value="">Selecione…</option>
+            <option>Direito do Trabalho</option>
+            <option>Direito do Consumidor</option>
+            <option>Direito de Família e Menores</option>
+            <option>Direito Societário</option>
+            <option>Direito Civil</option>
+            <option>Direito Penal</option>
+            <option>Direito Imobiliário</option>
+            <option>Insolvências / Recuperação de empresas</option>
+            <option>Outro / Não sei</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="f-msg">Descreva o seu caso ou dúvida</label>
+          <textarea id="f-msg" name="message" rows="5" maxlength="2000" required></textarea>
+        </div>
+        <fieldset class="field full radios" id="f-contact">
+          <legend>Como prefere ser contactado?</legend>
+          <label class="opt"><input type="radio" name="contact" value="E-mail"> E-mail</label>
+          <label class="opt"><input type="radio" name="contact" value="WhatsApp"> WhatsApp</label>
+        </fieldset>
+        <div class="field full" id="f-email-wrap" hidden>
+          <label for="f-email">O seu e-mail</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" maxlength="150">
+        </div>
+        <input type="hidden" name="_subject" value="Novo pedido de consulta - ProLegal Solutions">
+        <label class="field full consent" id="f-consent-wrap">
+          <input type="checkbox" id="f-consent" name="consent">
+          <span>
+            Aceita que os dados fornecidos sejam usados para análise jurídica e contacto posterior?
+            <em>Sim, autorizo o tratamento dos meus dados.</em>
+            <small>Consulte a <a href="#politica">Política de Privacidade</a>. Pode retirar a autorização a qualquer momento.</small>
+          </span>
+        </label>
+        <div class="form-foot full">
+          <p class="err" id="f-err" role="alert"></p>
+          <button type="submit" class="btn btn-gold">Enviar por WhatsApp</button>
+        </div>
+      </form>
+    </div>
+  </section>
 
-      <div class="trust-bar">
-        <div class="container trust-grid" data-animate>
-          <span>Conflitos civis</span>
-          <span>Contratos</span>
-          <span>Empresarial</span>
-          <span>Laboral</span>
+  <!-- Contacto -->
+  <section class="contact" id="contacto">
+    <div class="corner br" style="opacity:.6"><svg viewBox="0 0 300 300" fill="none" stroke="url(#gold)" stroke-width="1.2"><path d="M0 230 L230 0"/><path d="M0 200 L200 0"/></svg></div>
+    <div class="wrap contact-grid">
+      <div>
+        <span class="label reveal">Contacto</span>
+        <h2 class="reveal d1">Fale connosco <em>hoje.</em></h2>
+        <p class="contact-lead reveal d2">Resposta rápida e confidencial. O primeiro passo é apenas uma mensagem.</p>
+        <div class="contact-cta reveal d3">
+          <a class="btn btn-gold" href="https://wa.me/351938357708?text=Ol%C3%A1%2C%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn-line" href="mailto:prolegalsolutions.pt@gmail.com">Enviar email</a>
         </div>
       </div>
 
-      <section class="section" id="sobre">
-        <div class="container about-grid">
-          <div class="showcase-panel" data-animate>
-            <span class="showcase-badge">A nossa abordagem</span>
-            <h2 class="title" style="color: #fff; margin-top: 18px; font-size: clamp(2.8rem, 4vw, 3.8rem);">Advocacia clara, estratégica e próxima.</h2>
-            <p class="subtitle" style="color: rgba(255,255,255,0.78); margin-top: 16px;">Ajudamos clientes a resolver desafios jurídicos no momento certo, com análise profunda, comunicação clara e orientação prática para proteger interesses e reduzir riscos.</p>
-
-            <div class="showcase-box">
-              <h3>Consultoria personalizada</h3>
-              <p>Análise jurídica focada em resultados, estratégia e proteção do teu património e bem-estar.</p>
-            </div>
-          </div>
-
-          <div class="features-grid" data-animate>
-            <div class="feature-card">
-              <div class="feature-icon"><i class="fa-solid fa-shield-heart"></i></div>
-              <h3>Confiança</h3>
-              <p>Rigor técnico e acompanhamento transparente em cada fase do processo.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
-              <h3>Estratégia</h3>
-              <p>Decisões orientadas para objetivos, riscos e oportunidade de resolução.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon"><i class="fa-solid fa-user-tie"></i></div>
-              <h3>Atendimento</h3>
-              <p>Comunicação direta, clara e orientada para as necessidades reais do cliente.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon"><i class="fa-solid fa-scale-balanced"></i></div>
-              <h3>Rigor</h3>
-              <p>Trabalho jurídico com atenção ao detalhe, documentação e execução correta.</p>
-            </div>
+      <div class="contact-card reveal d2">
+        <div class="contact-item">
+          <div class="ico">✆</div>
+          <div>
+            <small>Telefone / WhatsApp</small>
+            <a href="tel:+351938357708">(+351) 938 357 708</a>
           </div>
         </div>
-      </section>
-
-      <section class="section" id="servicos">
-        <div class="container">
-          <span class="eyebrow">Serviços</span>
-          <h2 class="title">Assistência jurídica pensada para cada momento.</h2>
-
-          <div class="services-grid" style="margin-top: 34px;">
-            <article class="service-card" data-animate>
-              <div class="feature-icon"><i class="fa-solid fa-building-columns"></i></div>
-              <h3>Direito Empresarial</h3>
-              <p>Consultoria para constituição, contratos, riscos societários e organização jurídica.</p>
-              <ul class="service-list">
-                <li>Constituição e revisão de contratos</li>
-                <li>Assessoria comercial e societária</li>
-                <li>Mediação e prevenção de litígios</li>
-              </ul>
-            </article>
-            <article class="service-card" data-animate>
-              <div class="feature-icon"><i class="fa-solid fa-briefcase"></i></div>
-              <h3>Direito Laboral</h3>
-              <p>Apoio a trabalhadores e empresas em questões de contratação, risco e incumprimento.</p>
-              <ul class="service-list">
-                <li>Rescisão e negociação de cessação</li>
-                <li>Conflitos de trabalho e disciplina</li>
-                <li>Revisão de políticas internas</li>
-              </ul>
-            </article>
-            <article class="service-card" data-animate>
-              <div class="feature-icon"><i class="fa-solid fa-landmark"></i></div>
-              <h3>Direito Civil</h3>
-              <p>Defesa de interesses em disputas patrimoniais, familiares e de responsabilidade.</p>
-              <ul class="service-list">
-                <li>Consultoria preventiva</li>
-                <li>Mediação e litígio</li>
-                <li>Assessoria em contratos e obrigações</li>
-              </ul>
-            </article>
+        <div class="contact-item">
+          <div class="ico">✉</div>
+          <div>
+            <small>Email</small>
+            <a href="mailto:prolegalsolutions.pt@gmail.com">prolegalsolutions.pt@gmail.com</a>
           </div>
         </div>
-      </section>
-
-      <section class="section" id="areas">
-        <div class="container">
-          <span class="eyebrow">Áreas de atuação</span>
-          <h2 class="title">Soluções jurídicas focadas em proteção e crescimento.</h2>
-
-          <div class="numbers-grid">
-            <div class="number-card" data-animate>
-              <strong>01</strong>
-              <span>Família</span>
-            </div>
-            <div class="number-card" data-animate>
-              <strong>02</strong>
-              <span>Imobiliário</span>
-            </div>
-            <div class="number-card" data-animate>
-              <strong>03</strong>
-              <span>Compliance</span>
-            </div>
-            <div class="number-card" data-animate>
-              <strong>04</strong>
-              <span>Consultoria</span>
-            </div>
+        <div class="contact-item">
+          <div class="ico">⌖</div>
+          <div>
+            <small>Morada</small>
+            <a href="https://maps.google.com/?q=Rua%20A%20Gazeta%20d%27Oeiras%202%202780-171%20Oeiras" target="_blank" rel="noopener">Rua A Gazeta d’Oeiras 2 - 1.º C, 2780-171 Oeiras</a>
           </div>
-        </div>
-      </section>
-
-      <section class="section" id="processo">
-        <div class="container">
-          <span class="eyebrow">Como funciona</span>
-          <h2 class="title">Um processo simples, claro e centrado no cliente.</h2>
-
-          <div class="steps-grid" style="margin-top: 34px;">
-            <div class="step-card" data-animate>
-              <div class="step-number">1</div>
-              <h3>Diagnóstico</h3>
-              <p>Entendemos o contexto, objetivos e riscos específicos da sua situação.</p>
-            </div>
-            <div class="step-card" data-animate>
-              <div class="step-number">2</div>
-              <h3>Estratégia</h3>
-              <p>Definimos a melhor linha de atuação com base em objetivos e proteção legal.</p>
-            </div>
-            <div class="step-card" data-animate>
-              <div class="step-number">3</div>
-              <h3>Execução</h3>
-              <p>Acompanhamos a implementação, comunicação e resolução com rigor e presença.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section testimonials-wrap" id="testemunhos">
-        <div class="container">
-          <span class="eyebrow">Depoimentos</span>
-          <h2 class="title">A confiança dos nossos clientes fala por si.</h2>
-
-          <div class="testimonial-grid" style="margin-top: 36px;">
-            <article class="testimonial-card" data-animate>
-              <div class="stars">★★★★★</div>
-              <p>“O atendimento foi extremamente claro, profissional e estratégico. Sentimo-nos apoiados desde o primeiro contacto.”</p>
-            </article>
-            <article class="testimonial-card" data-animate>
-              <div class="stars">★★★★★</div>
-              <p>“A equipa explicou cada etapa com transparência e ajudou-nos a tomar decisões importantes com segurança.”</p>
-            </article>
-            <article class="testimonial-card" data-animate>
-              <div class="stars">★★★★★</div>
-              <p>“Um serviço jurídico com presença, rigor e visão prática. Recomendamos sem dúvida.”</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="contactos">
-        <div class="container">
-          <div class="cta-wrap" data-animate>
-            <span class="eyebrow" style="color: #d7bb85;">Contacte-nos</span>
-            <h2 class="title">Precisa de orientação jurídica clara e segura?</h2>
-            <p class="subtitle">Fale connosco para discutir a sua situação e encontrar a melhor solução legal.</p>
-            <div class="cta-actions">
-              <a href="mailto:info@prolegalsolutions.pt" class="btn btn-primary">info@prolegalsolutions.pt</a>
-              <a href="tel:+351000000000" class="btn btn-ghost">+351 000 000 000</a>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <div class="container footer-row">
-        <div>© 2026 ProLegal Solutions. Todos os direitos reservados.</div>
-        <div class="socials" aria-label="Redes sociais">
-          <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
       </div>
-    </footer>
+    </div>
+  </section>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
+  <!-- Política de Privacidade -->
+  <section class="privacy" id="politica">
+    <div class="wrap narrow">
+      <span class="label">Privacidade e segurança</span>
+      <h2>Política de <em>Privacidade</em></h2>
+      <p class="updated">Última atualização: 21 de outubro de 2026</p>
 
-        if (menuToggle && navLinks) {
-          menuToggle.addEventListener('click', function () {
-            navLinks.classList.toggle('open');
-          });
+      <div class="policy">
+        <h3>1. Responsável pelo tratamento</h3>
+        <p>ProLegal Solutions, Rua A Gazeta d’Oeiras 2 - 1.º C, 2780-171 Oeiras. E-mail: prolegalsolutions.pt@gmail.com. Telefone: (+351) 938 357 708. NIF: [inserir]. Cédula profissional: [inserir].</p>
 
-          navLinks.querySelectorAll('a').forEach(function (link) {
-            link.addEventListener('click', function () {
-              navLinks.classList.remove('open');
-            });
-          });
-        }
+        <h3>2. Dados que recolhemos</h3>
+        <p>Nome, área do Direito em questão, descrição do caso ou dúvida, preferência de contacto e a sua autorização. Pedimos que não inclua dados sensíveis (saúde, condenações penais, dados de terceiros) no formulário; esses dados devem ser partilhados apenas durante a consulta, se forem necessários.</p>
 
-        const animationTypes = ['animate-in-1', 'animate-in-2', 'animate-in-3', 'animate-in-4'];
-        let animationIndex = 0;
+        <h3>3. Finalidade e fundamento legal</h3>
+        <ul>
+          <li>Analisar o seu pedido e contactá-lo: com base no seu <strong>consentimento</strong> (Regulamento Geral sobre a Proteção de Dados, art. 6.º, n.º 1, al. a)).</li>
+          <li>Diligências pré-contratuais e execução do mandato, quando contratar os nossos serviços (art. 6.º, n.º 1, al. b)).</li>
+          <li>Cumprimento de obrigações legais e deontológicas da advocacia (art. 6.º, n.º 1, al. c)).</li>
+        </ul>
 
-        const observer = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              const animationType = animationTypes[animationIndex % animationTypes.length];
-              entry.target.classList.add(animationType);
-              animationIndex++;
-              observer.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.15 });
+        <h3>4. Conservação dos dados</h3>
+        <ul>
+          <li><strong>Pedidos de contacto sem contratação:</strong> eliminados no prazo de 6 meses após o último contacto.</li>
+          <li><strong>Processos de clientes:</strong> conservados durante o período exigido pela lei e pelas regras deontológicas da Ordem dos Advogados, sendo depois eliminados ou anonimizados.</li>
+          <li><strong>Autorização:</strong> pode ser retirada a qualquer momento, sem prejudicar a licitude do tratamento realizado até então.</li>
+        </ul>
 
-        document.querySelectorAll('[data-animate]').forEach(function (element) {
-          observer.observe(element);
-        });
+        <h3>5. Partilha de dados</h3>
+        <p>Os pedidos enviados pelo formulário chegam ao escritório através do WhatsApp (serviço da Meta) ou de e-mail. Não vendemos nem cedemos os seus dados a terceiros para fins comerciais. Recorremos apenas a prestadores necessários ao funcionamento do site, como o serviço de tipos de letra Google Fonts, que pode registar o seu endereço IP ao carregar a página.</p>
+
+        <h3>6. Segurança</h3>
+        <p>A ligação ao site é cifrada (HTTPS). Os dados são tratados apenas pela advogada responsável, que os acede através de contas protegidas por palavra-passe e autenticação de dois fatores. O formulário não guarda dados no site: a informação só é enviada para o WhatsApp quando o próprio utilizador carrega em enviar.</p>
+
+        <h3>7. Os seus direitos</h3>
+        <p>Pode pedir o acesso, a retificação, o apagamento, a limitação, a portabilidade ou a oposição ao tratamento dos seus dados, bem como retirar a autorização, escrevendo para prolegalsolutions.pt@gmail.com. Tem ainda o direito de apresentar reclamação à Comissão Nacional de Proteção de Dados (CNPD), em www.cnpd.pt.</p>
+
+        <h3>8. Cookies</h3>
+        <p>Este site não utiliza cookies de rastreio nem de publicidade.</p>
+
+        <h3>9. Alterações</h3>
+        <p>Esta política pode ser atualizada. A versão em vigor é sempre a publicada nesta página.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <a href="#top" class="brand">
+      <span class="mark"><svg viewBox="0 0 200 200"><use href="#scale"/></svg></span>
+      <span class="name">ProLegal Solutions</span>
+    </a>
+    <div class="foot-links">
+      <span>© 2026 ProLegal Solutions</span>
+      <a href="#politica">Política de Privacidade</a>
+      <a href="https://www.instagram.com/prolegalsolutions.pt" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://wa.me/351938357708?text=Ol%C3%A1%2C%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener">WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
+<a class="wa-float" id="wa" href="tel:+351938357708" aria-label="Ligar para o escritório">✆</a>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const header = document.getElementById('site-header');
+  const bar = document.getElementById('progress');
+  const wa = document.getElementById('wa');
+  const inner = document.querySelectorAll('[data-parallax-inner]');
+
+  // Hero entrance
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.hero .reveal, .hero .split-line').forEach((el, i) => {
+      setTimeout(() => el.classList.add('in'), 250 + i * 200);
+    });
+  });
+
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal, .steps').forEach((el) => {
+    if (!el.closest('.hero')) io.observe(el);
+  });
+
+  // Connector rail draws when steps come into view
+  const stepsEl = document.getElementById('steps');
+  const sio = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { stepsEl.classList.add('in'); sio.disconnect(); } });
+  }, { threshold: 0.4 });
+  sio.observe(stepsEl);
+
+  // ---- Configuração ----
+  // E-mail: colar aqui o endereço do formulário criado no Formspree (https://formspree.io).
+  const EMAIL_ENDPOINT = 'https://formspree.io/f/xwlvgqra';
+  const OFFICE_WA = '351938357708';
+
+  // ---- Formulário ----
+  const form = document.getElementById('request-form');
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const err = document.getElementById('f-err');
+  const emailWrap = document.getElementById('f-email-wrap');
+  const emailInput = document.getElementById('f-email');
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function selectedContact() {
+    const el = form.querySelector('input[name="contact"]:checked');
+    return el ? el.value : '';
+  }
+
+  function updateByContact() {
+    const c = selectedContact();
+    const isEmail = c === 'E-mail';
+    emailWrap.hidden = !isEmail;
+    emailInput.required = isEmail;
+    submitBtn.textContent = c === 'E-mail' ? 'Enviar por e-mail' : 'Enviar por WhatsApp';
+  }
+  form.querySelectorAll('input[name="contact"]').forEach((r) => r.addEventListener('change', updateByContact));
+  updateByContact();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('f-name').value.trim();
+    const area = document.getElementById('f-area').value;
+    const msg = document.getElementById('f-msg').value.trim();
+    const contact = selectedContact();
+    const email = emailInput.value.trim();
+    const consent = document.getElementById('f-consent').checked;
+    const isEmail = contact === 'E-mail';
+
+    const checks = [
+      ['f-name', !!name],
+      ['f-area', !!area],
+      ['f-msg', !!msg],
+      ['f-contact', !!contact],
+      ['f-email-wrap', !isEmail || EMAIL_RE.test(email)],
+      ['f-consent-wrap', consent]
+    ];
+    let ok = true;
+    checks.forEach(([id, valid]) => {
+      document.getElementById(id).classList.toggle('invalid', !valid);
+      if (!valid) ok = false;
+    });
+    if (!ok) {
+      err.classList.remove('ok');
+      err.textContent = 'Preencha os campos obrigatórios (com um e-mail válido, se escolheu e-mail) e aceite o tratamento dos dados.';
+      return;
+    }
+
+    err.classList.remove('ok');
+    err.textContent = '';
+
+    // WhatsApp: abre a conversa com a mensagem preenchida (o cliente confirma o envio)
+    if (contact === 'WhatsApp') {
+      const text = 'Olá, sou ' + name + '.\nÁrea do Direito: ' + area +
+                   '\nPrefiro ser contactado por WhatsApp.\n\n' + msg;
+      window.open('https://wa.me/' + OFFICE_WA + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      return;
+    }
+
+    // E-mail: envio automático através do serviço configurado
+    if (EMAIL_ENDPOINT.includes('COLOQUE_O_SEU_ID') || !EMAIL_ENDPOINT.startsWith('https://formspree.io/f/')) {
+      err.textContent = 'O envio por e-mail ainda não está configurado. Escolha WhatsApp ou contacte-nos diretamente.';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'A enviar…';
+    try {
+      const payload = {
+        name: name,
+        area: area,
+        message: msg,
+        contact: contact,
+        email: email,
+        consent: 'Sim',
+        _subject: 'Novo pedido de consulta - ProLegal Solutions'
+      };
+      const res = await fetch(EMAIL_ENDPOINT, {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
-    </script>
-  </body>
+      if (!res.ok) {
+        let detail = '';
+        try {
+          const j = await res.json();
+          detail = (j.errors || []).map((x) => x.message).join(' ');
+        } catch (_) {}
+        throw new Error(detail || ('erro ' + res.status));
+      }
+      form.reset();
+      updateByContact();
+      err.classList.add('ok');
+      err.textContent = 'Pedido enviado. Entraremos em contacto por e-mail.';
+    } catch (e) {
+      err.textContent = 'Não foi possível enviar (' + e.message + '). Tente novamente ou escolha WhatsApp.';
+    } finally {
+      submitBtn.disabled = false;
+      updateByContact();
+    }
+  });
+
+  let ticking = false;
+  function onScroll() {
+    const y = window.scrollY;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    header.classList.toggle('scrolled', y > 40);
+    bar.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+    wa.classList.toggle('show', y > window.innerHeight * 0.6);
+
+    if (!reduce) {
+      const hero = document.getElementById('hero');
+      hero.style.setProperty('--hy', (y * 0.3) + 'px');
+      inner.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const center = r.top + r.height / 2 - window.innerHeight / 2;
+        el.style.setProperty('--py', (-center * parseFloat(el.dataset.parallaxInner)) + 'px');
+      });
+    }
+    ticking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(onScroll); ticking = true; }
+  }, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
 </html>
