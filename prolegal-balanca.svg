@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="425 85 410 350" width="410" height="350">
+  <defs>
+    <linearGradient id="gg" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#fbeab8"/>
+      <stop offset=".45" stop-color="#d8b26e"/>
+      <stop offset="1" stop-color="#8a6632"/>
+    </linearGradient>
+    <linearGradient id="gs" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9c98a"/>
+      <stop offset="1" stop-color="#7c5a2b"/>
+    </linearGradient>
+    <!-- Braço esquerdo da trave -->
+    <path id="arm" fill="url(#gg)" d="M632 146
+      C612 128 572 124 530 132
+      C506 137 490 146 489 158
+      C488 168 498 174 512 170
+      C540 160 586 158 622 170
+      Z"/>
+    <!-- Prato esquerdo: cordas + concha -->
+    <g id="pan">
+      <path d="M492 166 L446 306 M492 166 L560 306" stroke="url(#gs)" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <path d="M438 304 H568 Q562 356 503 358 Q444 356 438 304 Z" fill="url(#gg)"/>
+      <path d="M438 304 H568" stroke="#fbeab8" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    </g>
+  </defs>
+
+  <!-- Remate superior -->
+  <circle cx="632" cy="105" r="17" fill="url(#gg)"/>
+  <circle cx="626" cy="99" r="5" fill="#fff6d8" opacity=".55"/>
+
+  <!-- Trave -->
+  <use href="#arm"/>
+  <use href="#arm" transform="matrix(-1 0 0 1 1264 0)"/>
+
+  <!-- Eixo central: nó + coluna -->
+  <ellipse cx="632" cy="176" rx="15" ry="22" fill="url(#gg)"/>
+  <path d="M624 194 H640 L646 360 H618 Z" fill="url(#gs)"/>
+  <path d="M628 196 L630 356" stroke="#fff3cc" stroke-width="2" opacity=".35"/>
+  <path d="M606 360 H658 L672 384 H592 Z" fill="url(#gg)"/>
+  <rect x="534" y="384" width="196" height="24" rx="2" fill="url(#gg)"/>
+  <path d="M538 388 H726" stroke="#fff3cc" stroke-width="1.5" opacity=".4"/>
+
+  <!-- Pratos -->
+  <use href="#pan"/>
+  <use href="#pan" transform="matrix(-1 0 0 1 1264 0)"/>
+</svg>
