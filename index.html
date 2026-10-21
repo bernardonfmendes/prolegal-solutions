@@ -13,7 +13,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://formspree.io; object-src 'none'; base-uri 'self'; form-action 'none'">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --navy: #0a1730;
@@ -25,11 +25,14 @@
     --cream: #f4eee2;
     --muted: #a9b2c4;
     --line: rgba(201,164,99,.35);
-    --serif: "Cormorant Garamond", Georgia, serif;
-    --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --sans: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: var(--sans);
     --ease: cubic-bezier(.2,.7,.1,1);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  button, input, select, textarea { font-family: var(--sans); }
+  h1, h2, h3 { font-weight: 300; letter-spacing: -.01em; }
+  h2 em, .hero h1 em { font-style: normal; font-weight: 400; }
   html { scroll-behavior: smooth; }
   body {
     font-family: var(--sans); color: var(--cream); line-height: 1.7;
@@ -78,6 +81,8 @@
   .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
   .brand .mark { width: 42px; height: 42px; flex: 0 0 42px; }
   .brand .mark svg { width: 100%; height: 100%; }
+  .scale-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .hero .logo-big .scale-img { filter: drop-shadow(0 12px 24px rgba(0,0,0,.45)); animation: float 7s ease-in-out infinite; }
   .brand .name { font-family: var(--serif); font-size: 1.5rem; font-weight: 600; letter-spacing: .04em; color: var(--gold-hi); text-transform: uppercase; white-space: nowrap; }
   nav.links { display: flex; align-items: center; gap: 38px; }
   nav.links a {
@@ -130,7 +135,7 @@
   .hero h1 em { font-style: italic; color: var(--gold-hi); }
   .hero p.lead { margin: 22px auto 0; max-width: 580px; font-size: 1.02rem; font-weight: 300; color: var(--muted); }
   .cta-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; margin-top: 44px; }
-  .scroll-hint {
+  .scroll-hint-unused {
     position: absolute; bottom: 34px; left: 50%; transform: translateX(-50%); z-index: 2;
     display: flex; flex-direction: column; align-items: center; gap: 12px;
     font-size: .64rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
@@ -172,7 +177,7 @@
   .about-body p.intro { color: var(--cream); font-size: 1.2rem; font-weight: 300; }
   .quote-block {
     margin-top: 46px; padding-top: 34px; border-top: 1px solid var(--line);
-    font-family: var(--serif); font-style: italic; font-size: 2rem; line-height: 1.3; color: var(--gold-hi);
+    font-family: var(--serif); font-style: normal; font-weight: 300; font-size: 1.8rem; line-height: 1.3; color: var(--gold-hi);
   }
 
   /* Como funciona */
@@ -189,12 +194,12 @@
   .step .dot {
     width: 80px; height: 80px; margin: 0 auto; border-radius: 50%;
     background: var(--navy-3); border: 1px solid var(--gold);
-    display: grid; place-items: center; font-family: var(--serif); font-size: 1.7rem; color: var(--gold-hi);
+    display: grid; place-items: center; font-family: var(--sans); font-size: 1.05rem; font-weight: 400; letter-spacing: .12em; color: var(--gold-hi);
     box-shadow: 0 0 0 10px var(--navy), 0 0 40px -6px rgba(201,164,99,.35);
     transition: background .5s, color .5s, transform .5s var(--ease);
   }
   .step:hover .dot { background: var(--gold); color: var(--navy); transform: translateY(-4px); }
-  .step h3 { font-family: var(--serif); font-weight: 500; font-size: 1.6rem; color: var(--cream); margin: 36px 0 12px; }
+  .step h3 { font-family: var(--sans); font-weight: 400; font-size: 1.15rem; letter-spacing: .01em; color: var(--cream); margin: 36px 0 12px; }
   .step p { color: var(--muted); font-size: .95rem; }
 
   /* Contacto */
@@ -206,9 +211,11 @@
   .contact-item { display: flex; gap: 22px; align-items: center; padding: 26px 0; border-bottom: 1px solid rgba(201,164,99,.18); }
   .contact-item:last-child { border-bottom: none; }
   .contact-item .ico {
-    flex: 0 0 48px; height: 48px; border: 1px solid var(--gold); border-radius: 50%;
-    display: grid; place-items: center; color: var(--gold-hi); font-size: 1rem;
+    flex: 0 0 48px; height: 48px; border: 1px solid var(--line); border-radius: 50%;
+    display: grid; place-items: center;
   }
+  .contact-item .ico svg { width: 20px; height: 20px; }
+  .wa-float svg { stroke: none; }
   .contact-item small { display: block; font-size: .66rem; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
   .contact-item a { color: var(--cream); text-decoration: none; font-size: 1.05rem; transition: color .3s; }
   .contact-item a:hover { color: var(--gold-hi); }
@@ -233,6 +240,25 @@
   }
   .wa-float.show { opacity: 1; transform: none; pointer-events: auto; }
   .wa-float:hover { transform: scale(1.07); }
+
+  /* Transições entre secções: fio dourado discreto que se desenha */
+  section::before {
+    content: ""; position: absolute; top: 0; left: 50%; width: min(1000px, 86%); height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line), transparent);
+    transform: translateX(-50%) scaleX(0); transition: transform 1.8s var(--ease); pointer-events: none;
+  }
+  section.in::before { transform: translateX(-50%) scaleX(1); }
+  .corner { will-change: transform; }
+
+  /* Variações de entrada */
+  .steps .step.reveal { transform: translateY(50px) scale(.96); }
+  .steps .step.reveal.in { transform: none; }
+  .contact-card.reveal { transform: translateX(60px); }
+  .contact-card.reveal.in { transform: none; }
+  .req-form.reveal { transform: translateY(70px) scale(.985); transition-duration: 1.4s; }
+  .req-form.reveal.in { transform: none; }
+  .about-body .quote-block.reveal { letter-spacing: .01em; }
+  .hero-inner { will-change: transform, opacity; }
 
   /* Reveal on scroll */
   .reveal { opacity: 0; transform: translateY(36px); transition: opacity 1.1s var(--ease), transform 1.1s var(--ease); }
@@ -336,20 +362,27 @@
       <stop offset="1" stop-color="#7d5d2c"/>
     </linearGradient>
     <symbol id="scale" viewBox="0 0 200 200">
-      <g fill="url(#gold)">
-        <circle cx="100" cy="20" r="10"/>
-        <path d="M28 50 Q44 36 62 48 Q80 60 100 54 Q120 60 138 48 Q156 36 172 50 Q160 66 140 60 Q120 68 100 66 Q80 68 60 60 Q40 66 28 50Z"/>
-        <ellipse cx="100" cy="68" rx="11" ry="15"/>
-        <path d="M93 80 L107 80 L112 150 L88 150Z"/>
-        <path d="M70 150 L130 150 L124 162 L76 162Z"/>
-        <rect x="58" y="162" width="84" height="11" rx="1"/>
-        <path d="M6 118 L62 118 Q58 146 34 146 Q10 146 6 118Z"/>
-        <path d="M138 118 L194 118 Q190 146 166 146 Q142 146 138 118Z"/>
+      <g fill="none" stroke="url(#gold)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="100" cy="30" r="6" fill="url(#gold)" stroke="none"/>
+        <path d="M100 36 V162"/>
+        <path d="M64 178 H136"/>
+        <path d="M78 162 H122"/>
+        <path d="M34 66 Q100 52 166 66"/>
+        <circle cx="100" cy="66" r="4.5" fill="url(#gold)" stroke="none"/>
+        <path d="M38 66 L12 124 M38 66 L64 124"/>
+        <path d="M162 66 L136 124 M162 66 L188 124"/>
+        <path d="M8 124 H68 Q62 150 38 150 Q14 150 8 124 Z"/>
+        <path d="M132 124 H192 Q186 150 162 150 Q138 150 132 124 Z"/>
       </g>
-      <g stroke="url(#gold)" stroke-width="2.2" stroke-linecap="round" fill="none">
-        <path d="M34 56 L12 118 M34 56 L60 118"/>
-        <path d="M166 56 L140 118 M166 56 L188 118"/>
-      </g>
+    </symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24">
+      <path fill="none" stroke="url(#gold)" stroke-width="1.5" stroke-linejoin="round" d="M5 3h3.2l1.6 4.4-2 1.3a11 11 0 0 0 6.5 6.5l1.3-2 4.4 1.6V19a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/>
+    </symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24">
+      <g fill="none" stroke="url(#gold)" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 6l9 7 9-7"/></g>
+    </symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24">
+      <g fill="none" stroke="url(#gold)" stroke-width="1.5" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></g>
     </symbol>
   </defs>
 </svg>
@@ -359,7 +392,7 @@
 <header id="site-header">
   <div class="wrap nav">
     <a href="#top" class="brand">
-      <span class="mark"><svg viewBox="0 0 200 200"><use href="#scale"/></svg></span>
+      <span class="mark"><img src="prolegal-balanca.png" alt="Balança ProLegal Solutions" class="scale-img"></span>
       <span class="name">ProLegal Solutions</span>
     </a>
     <nav class="links">
@@ -379,7 +412,7 @@
     <div class="corner br"><svg viewBox="0 0 300 300" fill="none" stroke="url(#gold)" stroke-width="1.6"><path d="M0 230 L230 0"/><path d="M0 200 L200 0"/><path d="M0 170 L170 0"/></svg></div>
 
     <div class="wrap hero-inner">
-      <div class="logo-big reveal"><svg viewBox="0 0 200 200"><use href="#scale"/></svg></div>
+      <div class="logo-big reveal"><img src="prolegal-balanca.png" alt="Balança ProLegal Solutions" class="scale-img"></div>
       <div class="brand-title">
         <span class="split-line"><span class="gold-text">ProLegal Solutions</span></span>
       </div>
@@ -391,7 +424,6 @@
         <a class="btn btn-line" href="mailto:prolegalsolutions.pt@gmail.com">Enviar email</a>
       </div>
     </div>
-    <div class="scroll-hint"><i></i>Scroll</div>
   </div>
 
   <!-- Sobre -->
@@ -516,21 +548,21 @@
 
       <div class="contact-card reveal d2">
         <div class="contact-item">
-          <div class="ico">✆</div>
+          <div class="ico"><svg viewBox="0 0 24 24"><use href="#i-phone"/></svg></div>
           <div>
             <small>Telefone / WhatsApp</small>
             <a href="tel:+351938357708">(+351) 938 357 708</a>
           </div>
         </div>
         <div class="contact-item">
-          <div class="ico">✉</div>
+          <div class="ico"><svg viewBox="0 0 24 24"><use href="#i-mail"/></svg></div>
           <div>
             <small>Email</small>
             <a href="mailto:prolegalsolutions.pt@gmail.com">prolegalsolutions.pt@gmail.com</a>
           </div>
         </div>
         <div class="contact-item">
-          <div class="ico">⌖</div>
+          <div class="ico"><svg viewBox="0 0 24 24"><use href="#i-pin"/></svg></div>
           <div>
             <small>Morada</small>
             <a href="https://maps.google.com/?q=Rua%20A%20Gazeta%20d%27Oeiras%202%202780-171%20Oeiras" target="_blank" rel="noopener">Rua A Gazeta d’Oeiras 2 - 1.º C, 2780-171 Oeiras</a>
@@ -591,7 +623,7 @@
 <footer>
   <div class="wrap foot">
     <a href="#top" class="brand">
-      <span class="mark"><svg viewBox="0 0 200 200"><use href="#scale"/></svg></span>
+      <span class="mark"><img src="prolegal-balanca.png" alt="Balança ProLegal Solutions" class="scale-img"></span>
       <span class="name">ProLegal Solutions</span>
     </a>
     <div class="foot-links">
@@ -603,7 +635,7 @@
   </div>
 </footer>
 
-<a class="wa-float" id="wa" href="tel:+351938357708" aria-label="Ligar para o escritório">✆</a>
+<a class="wa-float" id="wa" href="tel:+351938357708" aria-label="Ligar para o escritório"><svg viewBox="0 0 24 24" width="24" height="24"><use href="#i-phone"/></svg></a>
 
 <script>
 (function () {
@@ -626,7 +658,7 @@
       if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
     });
   }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
-  document.querySelectorAll('.reveal, .steps').forEach((el) => {
+  document.querySelectorAll('.reveal, .steps, section').forEach((el) => {
     if (!el.closest('.hero')) io.observe(el);
   });
 
@@ -759,6 +791,19 @@
     if (!reduce) {
       const hero = document.getElementById('hero');
       hero.style.setProperty('--hy', (y * 0.3) + 'px');
+
+      // Conteúdo do hero recua e desvanece ao descer
+      const heroInner = hero.querySelector('.hero-inner');
+      const p = Math.min(y / (window.innerHeight * 0.9), 1);
+      heroInner.style.transform = 'translate3d(0,' + (y * 0.22) + 'px,0)';
+      heroInner.style.opacity = String(1 - p * 0.9);
+
+      // Ornamentos dos cantos deslocam-se com o scroll (paralaxe suave)
+      document.querySelectorAll('.corner').forEach((c) => {
+        const r = c.parentElement.getBoundingClientRect();
+        const off = (r.top + r.height / 2 - window.innerHeight / 2) * -0.12;
+        c.style.transform = 'translate3d(0,' + off + 'px,0)' + (c.classList.contains('br') ? ' rotate(180deg)' : '');
+      });
       inner.forEach((el) => {
         const r = el.getBoundingClientRect();
         const center = r.top + r.height / 2 - window.innerHeight / 2;
