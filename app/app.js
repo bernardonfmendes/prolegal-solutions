@@ -293,13 +293,14 @@
       url = `https://wa.me/${digits}?text=${encodeURIComponent(texto)}`;
     }
 
-    // Regista que a mensagem foi preparada. A confirmação real do cliente é marcada à parte.
+    // Abrir primeiro (dentro do toque do utilizador), para o browser não bloquear o pop-up
+    if (url.startsWith('mailto:')) window.location.href = url;
+    else window.open(url, '_blank', 'noopener');
+
+    // Depois registar que a mensagem foi preparada. A confirmação real do cliente é marcada à parte.
     const agora = new Date().toISOString();
     const { error } = await sb.from('reunioes').update({ confirmacao_enviada_em: agora }).eq('id', id);
     if (error) toast('Não foi possível registar o envio.');
-
-    if (url.startsWith('mailto:')) window.location.href = url;
-    else window.open(url, '_blank', 'noopener');
     await loadAll();
   }
 
