@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Prolegal Solutions</title>
+<meta name="description" content="Agenda, prazos e faturação do escritório Prolegal Solutions">
+<meta name="theme-color" content="#14213d">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Prolegal">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<style>
+  :root{
+    --navy:#14213d; --navy-2:#1f3160; --gold:#b8924a; --gold-soft:#f3ead7;
+    --bg:#f7f5f0; --card:#ffffff; --ink:#1b1f2a; --muted:#6b7280; --line:#e5e1d8;
+    --late:#b42318; --soon:#b54708; --ok:#067647;
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1729; --card:#17213a; --ink:#eef1f7; --muted:#9aa4b8; --line:#2a3550; --gold-soft:#2a2519;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1729; --card:#17213a; --ink:#eef1f7; --muted:#9aa4b8; --line:#2a3550; --gold-soft:#2a2519;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.5 Montserrat,system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  h1,h2,h3{margin:0;line-height:1.2}
+  h2{font-size:20px;margin:18px 0 12px}
+  h3{font-size:15px;margin:0 0 10px;color:var(--navy)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) h3{color:#c9d3ea} }
+  :root[data-theme="dark"] h3{color:#c9d3ea}
+  .muted{color:var(--muted);font-size:13px}
+  .hidden,[hidden]{display:none !important}
+
+  header.top{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
+  .brand img{width:30px;height:30px;border-radius:8px}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:10px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+
+  main{max-width:720px;margin:0 auto;padding:0 16px}
+  .view{display:none}
+  .view.active{display:block}
+
+  .block{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
+  .card p{margin:6px 0 0;white-space:pre-line}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .empty{color:var(--muted);font-size:14px;margin:4px 0 0}
+
+  .chip{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+  .chip.agendada{color:var(--navy);border-color:var(--navy-2)}
+  .chip.realizada{color:var(--ok);border-color:var(--ok)}
+  .chip.cancelada{color:var(--late);border-color:var(--late)}
+  .chip.urgente{color:var(--late);border-color:var(--late);font-weight:600}
+
+  .btn{font:inherit;font-weight:600;border-radius:12px;border:1px solid var(--navy);background:var(--card);color:var(--navy);padding:10px 14px;cursor:pointer;width:auto}
+  .btn.primary{background:var(--navy);color:#fff;width:100%;margin-top:8px}
+  .btn.gold{background:var(--gold);border-color:var(--gold);color:#fff}
+  .btn.danger{border-color:var(--late);color:var(--late)}
+  .btn.small{padding:6px 10px;font-size:13px;border-radius:10px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .cal-head,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-head span{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
+  .cal-day{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;aspect-ratio:1/1;font:inherit;color:var(--ink);cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .cal-day.out{opacity:.35}
+  .cal-day.today{border-color:var(--gold);font-weight:700}
+  .cal-day.sel{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .cal-day i{font-style:normal;font-size:10px;background:var(--gold);color:#fff;border-radius:999px;padding:0 6px;line-height:16px}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin:10px 0}
+
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .stat b{display:block;font-size:22px;color:var(--navy)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .stat b{color:#e7ecf7} }
+  :root[data-theme="dark"] .stat b{color:#e7ecf7}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .line:last-child{border-bottom:0}
+  .bar-row{display:grid;grid-template-columns:44px 1fr 96px;gap:8px;align-items:center;font-size:13px;margin:6px 0}
+  .bar{background:var(--gold-soft);border-radius:6px;height:12px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--gold)}
+
+  .prazo.late{border-color:var(--late)}
+  .prazo.soon{border-color:var(--soon)}
+  .prazo.done{opacity:.6}
+  .prazo.late .muted{color:var(--late)}
+  .prazo.soon .muted{color:var(--soon)}
+
+  .tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:6}
+  .tabs button{background:none;border:0;font:inherit;font-size:12px;color:var(--muted);padding:6px 0;cursor:pointer;border-radius:10px}
+  .tabs button.on{color:var(--navy);font-weight:700;background:var(--gold-soft)}
+
+  form label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+  input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  textarea{min-height:90px;resize:vertical}
+  .check{display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--ink)}
+  .check input{width:auto}
+  dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100vw - 24px));background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  dialog::backdrop{background:rgba(10,16,30,.55)}
+  .dlg-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 0}
+  .dlg-body{padding:6px 18px 18px}
+  .dlg-foot{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .x{background:none;border:0;font-size:22px;color:var(--muted);cursor:pointer}
+
+  .auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .auth-box{width:min(380px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+  .auth-box img{width:56px;height:56px;border-radius:14px;display:block;margin:0 auto 10px}
+  .auth-box h1{text-align:center;font-size:20px;color:var(--navy)}
+  .auth-box .btn.primary{margin-top:18px}
+
+  #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20;max-width:90vw;text-align:center}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- Ecrã de entrada -->
+<section id="auth" class="auth" hidden>
+  <div class="auth-box">
+    <img src="icons/icon-192.png" alt="">
+    <h1>Prolegal Solutions</h1>
+    <p class="muted" style="text-align:center">Acesso reservado ao escritório</p>
+    <form id="f-login">
+      <label for="l-email">E-mail</label>
+      <input id="l-email" type="email" autocomplete="username" required>
+      <label for="l-pass">Palavra-passe</label>
+      <input id="l-pass" type="password" autocomplete="current-password" required>
+      <button class="btn primary" type="submit">Entrar</button>
+    </form>
+    <p id="config-aviso" class="muted hidden" style="margin-top:14px;color:var(--late)"></p>
+  </div>
+</section>
+
+<!-- Aplicação -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="brand"><img src="icons/icon-192.png" alt="">Prolegal Solutions</div>
+    <button class="btn-ghost" data-logout>Sair</button>
+  </header>
+
+  <main>
+    <!-- Hoje -->
+    <section id="v-hoje" class="view active">
+      <h2>Hoje</h2>
+      <div class="block">
+        <h3>Confirmações a fazer (próximas 48 h)</h3>
+        <div id="lista-confirmar"></div>
+      </div>
+      <div class="block">
+        <h3>Próximas reuniões</h3>
+        <div id="lista-proximas"></div>
+      </div>
+      <div class="block">
+        <h3>Prazos a vencer (7 dias)</h3>
+        <div id="lista-prazos-hoje"></div>
+      </div>
+      <button class="btn primary" data-nova-reuniao>+ Nova reunião</button>
+    </section>
+
+    <!-- Calendário -->
+    <section id="v-cal" class="view">
+      <h2>Calendário</h2>
+      <div class="cal-nav">
+        <button class="btn small" data-mes="-1" aria-label="Mês anterior">‹</button>
+        <strong id="cal-titulo" style="text-transform:capitalize"></strong>
+        <button class="btn small" data-mes="1" aria-label="Mês seguinte">›</button>
+      </div>
+      <div class="block">
+        <div class="cal-head"><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span><span>D</span></div>
+        <div id="cal-grid" class="cal-grid" style="margin-top:4px"></div>
+      </div>
+      <div id="cal-dia"></div>
+    </section>
+
+    <!-- Prazos -->
+    <section id="v-prazos" class="view">
+      <h2>Prazos de trabalho</h2>
+      <button class="btn primary" data-novo-prazo style="margin:0 0 14px">+ Novo prazo</button>
+      <div id="lista-prazos"></div>
+    </section>
+
+    <!-- Faturação -->
+    <section id="v-fact" class="view">
+      <h2>Valor faturado</h2>
+      <label for="fact-mes" class="muted">Mês</label>
+      <input id="fact-mes" type="month">
+      <div class="stats">
+        <div class="stat"><span class="muted">Realizado no mês</span><b id="fact-mes-total">0 €</b><span id="fact-mes-n" class="muted"></span></div>
+        <div class="stat"><span class="muted">Previsto (agendadas)</span><b id="fact-prev">0 €</b><span id="fact-prev-n" class="muted"></span></div>
+      </div>
+      <div class="block">
+        <h3>Total realizado no ano: <span id="fact-ano-total"></span></h3>
+        <div id="fact-barras"></div>
+      </div>
+      <div class="block">
+        <h3>Reuniões do mês</h3>
+        <div id="fact-lista"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs" aria-label="Navegação">
+    <button data-tab="v-hoje" class="on">Hoje</button>
+    <button data-tab="v-cal">Calendário</button>
+    <button data-tab="v-prazos">Prazos</button>
+    <button data-tab="v-fact">Faturação</button>
+  </nav>
+</div>
+
+<!-- Diálogo: reunião -->
+<dialog id="d-reuniao">
+  <form id="f-reuniao" method="dialog">
+    <div class="dlg-head">
+      <h2 id="d-reuniao-titulo" style="margin:0">Nova reunião</h2>
+      <button type="button" class="x" data-close aria-label="Fechar">×</button>
+    </div>
+    <div class="dlg-body">
+      <input type="hidden" id="r-id">
+      <label for="r-cliente">Nome do cliente</label>
+      <input id="r-cliente" required maxlength="120">
+      <label for="r-contacto">Contacto (telemóvel ou e-mail)</label>
+      <input id="r-contacto" maxlength="120" placeholder="ex.: 912 345 678 ou cliente@email.pt">
+      <label for="r-inicio">Data e hora</label>
+      <input id="r-inicio" type="datetime-local" required>
+      <label for="r-honorarios">Honorários (€)</label>
+      <input id="r-honorarios" type="number" min="0" step="0.01" inputmode="decimal" value="0">
+      <label for="r-topicos">Tópicos da reunião</label>
+      <textarea id="r-topicos" maxlength="2000"></textarea>
+      <label for="r-estado">Estado</label>
+      <select id="r-estado">
+        <option value="agendada">Agendada</option>
+        <option value="realizada">Realizada</option>
+        <option value="cancelada">Cancelada</option>
+      </select>
+      <label class="check"><input type="checkbox" id="r-confirmada"> Confirmada pelo cliente</label>
+    </div>
+    <div class="dlg-body" style="padding-top:0">
+      <button class="btn primary" type="submit">Guardar</button>
+      <div class="dlg-foot">
+        <button type="button" class="btn danger" id="r-apagar" hidden>Apagar</button>
+        <button type="button" class="btn" data-close>Cancelar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<!-- Diálogo: prazo -->
+<dialog id="d-prazo">
+  <form id="f-prazo" method="dialog">
+    <div class="dlg-head">
+      <h2 id="d-prazo-titulo" style="margin:0">Novo prazo</h2>
+      <button type="button" class="x" data-close aria-label="Fechar">×</button>
+    </div>
+    <div class="dlg-body">
+      <input type="hidden" id="p-id">
+      <label for="p-descricao">O que tem de ser entregue</label>
+      <input id="p-descricao" required maxlength="200">
+      <label for="p-cliente">Cliente (opcional)</label>
+      <input id="p-cliente" maxlength="120">
+      <label for="p-data">Data limite</label>
+      <input id="p-data" type="date" required>
+    </div>
+    <div class="dlg-body" style="padding-top:0">
+      <button class="btn primary" type="submit">Guardar</button>
+      <div class="dlg-foot">
+        <button type="button" class="btn danger" id="p-apagar" hidden>Apagar</button>
+        <button type="button" class="btn" data-close>Cancelar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
