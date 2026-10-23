@@ -118,7 +118,7 @@
         ${m.topicos ? `<p>${esc(m.topicos)}</p>` : ''}
         ${enviada ? `<div style="margin-top:6px">${enviada}</div>` : ''}
         <div class="actions">
-          ${pendente && m.contacto ? `<button class="btn small gold" data-confirm="${m.id}">Enviar confirmação</button>` : ''}
+          ${pendente ? botoesConfirmar(m) : ''}
           ${pendente ? `<button class="btn small" data-confirmada="${m.id}">Confirmou</button>` : ''}
           ${m.estado === 'agendada' && !futura ? `<button class="btn small" data-realizar="${m.id}">Marcar realizada</button>` : ''}
           <button class="btn small" data-edit="${m.id}">Editar</button>
@@ -161,7 +161,7 @@
             <div><strong>${esc(m.cliente)}</strong> <span class="muted">· ${fmtDataHora(m.inicio)}</span></div>${urgente}
           </div>
           <div class="actions" style="margin:6px 0 12px">
-            ${m.contacto ? `<button class="btn small gold" data-confirm="${m.id}">Enviar confirmação</button>` : '<span class="muted">Sem contacto guardado</span>'}
+            ${botoesConfirmar(m) || '<span class="muted">Sem contacto guardado</span>'}
             <button class="btn small" data-confirmada="${m.id}">Confirmou</button>
           </div>`;
         }).join('')
@@ -270,18 +270,25 @@
       `Com os melhores cumprimentos,\n${cfg.ASSINATURA || 'Prolegal Solutions'}`;
   }
 
-  async function enviarConfirmacao(id) {
+  function botoesConfirmar(m) {
+    let h = '';
+    if (m.telefone) h += `<button class="btn small gold" data-confirm="${m.id}" data-canal="whatsapp">Enviar por WhatsApp</button>`;
+    if (m.email) h += `<button class="btn small gold" data-confirm="${m.id}" data-canal="email">Enviar por e-mail</button>`;
+    return h;
+  }
+
+  async function enviarConfirmacao(id, canal) {
     const m = reunioes.find((x) => x.id === id);
     if (!m) return;
-    const contacto = (m.contacto || '').trim();
-    if (!contacto) { toast('Esta reunião não tem contacto guardado.'); return; }
     const texto = textoConfirmacao(m);
 
     let url;
-    if (contacto.includes('@')) {
-      url = `mailto:${encodeURIComponent(contacto)}?subject=${encodeURIComponent('Confirmação de reunião')}&body=${encodeURIComponent(texto)}`;
+    if (canal === 'email') {
+      if (!m.email) { toast('Esta reunião não tem e-mail guardado.'); return; }
+      url = `mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent('Confirmação de reunião')}&body=${encodeURIComponent(texto)}`;
     } else {
-      let digits = contacto.replace(/\D/g, '');
+      if (!m.telefone) { toast('Esta reunião não tem telemóvel guardado.'); return; }
+      let digits = m.telefone.replace(/\D/g, '');
       if (digits.length === 9) digits = '351' + digits; // número português sem indicativo
       url = `https://wa.me/${digits}?text=${encodeURIComponent(texto)}`;
     }
@@ -318,7 +325,8 @@
       if (!m) return;
       $('#r-id').value = m.id;
       $('#r-cliente').value = m.cliente || '';
-      $('#r-contacto').value = m.contacto || '';
+      $('#r-telefone').value = m.telefone || '';
+      $('#r-email').value = m.email || '';
       $('#r-inicio').value = toLocalInput(m.inicio);
       $('#r-honorarios').value = m.honorarios ?? 0;
       $('#r-topicos').value = m.topicos || '';
@@ -390,7 +398,7 @@
     if ('novaReuniao' in el.dataset) return openReuniao(null, null);
     if ('novoDia' in el.dataset) return openReuniao(null, diaSel);
     if (el.dataset.edit) return openReuniao(el.dataset.edit);
-    if (el.dataset.confirm) return enviarConfirmacao(el.dataset.confirm);
+    if (el.dataset.confirm) return enviarConfirmacao(el.dataset.confirm, el.dataset.canal);
     if (el.dataset.confirmada) return atualizarReuniao(el.dataset.confirmada, { confirmada: true }, 'Marcada como confirmada');
     if (el.dataset.realizar) return atualizarReuniao(el.dataset.realizar, { estado: 'realizada' }, 'Reunião marcada como realizada');
     if ('novoPrazo' in el.dataset) return openPrazo(null);
@@ -421,7 +429,8 @@
     if (!inicio) { toast('Indique a data e a hora.'); return; }
     const payload = {
       cliente: $('#r-cliente').value.trim(),
-      contacto: $('#r-contacto').value.trim() || null,
+      telefone: $('#r-telefone').value.trim() || null,
+      email: $('#r-email').value.trim() || null,
       inicio: new Date(inicio).toISOString(),
       honorarios: Number($('#r-honorarios').value) || 0,
       topicos: $('#r-topicos').value.trim() || null,
