@@ -437,6 +437,14 @@
       estado: $('#r-estado').value,
       confirmada: $('#r-confirmada').checked
     };
+    if (id) {
+      const orig = reunioes.find((x) => x.id === id);
+      // Se a data mudou (remarcação), a confirmação anterior deixa de valer
+      if (orig && toLocalInput(orig.inicio) !== inicio) {
+        payload.confirmada = false;
+        payload.confirmacao_enviada_em = null;
+      }
+    }
     const res = id
       ? await sb.from('reunioes').update(payload).eq('id', id)
       : await sb.from('reunioes').insert({ ...payload, user_id: user.id });

@@ -128,6 +128,16 @@
 
   #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20;max-width:90vw;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .btn{background:transparent;color:#e7ecf7;border-color:#5b6a8c}
+    :root:not([data-theme="light"]) .btn.primary{background:#e7ecf7;color:#14213d;border-color:#e7ecf7}
+    :root:not([data-theme="light"]) .btn.gold{background:var(--gold);color:#fff;border-color:var(--gold)}
+    :root:not([data-theme="light"]) .btn.danger{color:#ff8a80;border-color:#ff8a80}
+  }
+  :root[data-theme="dark"] .btn{background:transparent;color:#e7ecf7;border-color:#5b6a8c}
+  :root[data-theme="dark"] .btn.primary{background:#e7ecf7;color:#14213d;border-color:#e7ecf7}
+  :root[data-theme="dark"] .btn.gold{background:var(--gold);color:#fff;border-color:var(--gold)}
+  :root[data-theme="dark"] .btn.danger{color:#ff8a80;border-color:#ff8a80}
 </style>
 </head>
 <body>
