@@ -359,8 +359,15 @@
 
   function showTab(id) {
     $$('.view').forEach((v) => v.classList.toggle('active', v.id === id));
-    $$('.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === id));
+    $$('.drawer button[data-tab]').forEach((b) => b.classList.toggle('on', b.dataset.tab === id));
+    toggleMenu(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleMenu(open) {
+    $('#menu').hidden = !open;
+    $('#menu-overlay').hidden = !open;
+    $('[data-menu]').setAttribute('aria-expanded', String(open));
   }
 
   // ---------- eventos ----------
@@ -368,6 +375,8 @@
     const el = e.target.closest('button, [data-day]');
     if (!el) return;
 
+    if ('menu' in el.dataset) return toggleMenu(true);
+    if ('closeMenu' in el.dataset) return toggleMenu(false);
     if (el.dataset.tab) return showTab(el.dataset.tab);
     if (el.dataset.mes) {
       mesCal = new Date(mesCal.getFullYear(), mesCal.getMonth() + Number(el.dataset.mes), 1);
