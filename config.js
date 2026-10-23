@@ -1,10 +1,6 @@
-// Configuração da app. Só precisa de editar este ficheiro.
-// 1. Crie um projeto em supabase.com (escolha a região Europa, ex.: Frankfurt ou Irlanda).
-// 2. Em Project Settings → API copie o "Project URL" e a chave "anon public".
-// A chave anon é pública por desenho: a segurança está nas regras RLS do supabase.sql.
+ // Configuração da app. Só precisa de editar este ficheiro.
 window.APP_CONFIG = {
-  SUPABASE_URL: 'COLE_AQUI_O_PROJECT_URL',          // ex.: https://abcd1234.supabase.co
-  SUPABASE_ANON_KEY: 'COLE_AQUI_A_CHAVE_ANON',      // começa por eyJ...
-  // Assinatura usada nas mensagens de confirmação enviadas aos clientes
+  SUPABASE_URL: 'https://flnnbnnvkldhifboojbj.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsbm5ibm52a2xkaGlmYm9vamJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3ODcyMjksImV4cCI6MjEwODM2MzIyOX0.GRe3PzrLAk7kwg6vL1B-2AeRZDoIPDGby2w_axNJaN0',
   ASSINATURA: 'Prolegal Solutions'
 };
