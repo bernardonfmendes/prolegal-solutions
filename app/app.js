@@ -114,7 +114,7 @@
       <article class="card">
         <div class="row">
           <strong>${esc(m.cliente)}</strong>
-          <div class="card-chips">${m.confirmada ? '<span class="chip ok">Confirmada</span>' : ''}<span class="chip ${esc(m.estado)}">${LABEL[m.estado] || esc(m.estado)}</span></div>
+          <div class="card-chips">${avisoReuniaoAtivo(m) ? '<span class="chip urgente">Aviso</span>' : ''}${m.confirmada ? '<span class="chip ok">Confirmada</span>' : ''}<span class="chip ${esc(m.estado)}">${LABEL[m.estado] || esc(m.estado)}</span></div>
         </div>
         <div class="muted">${fmtDataHora(m.inicio)} · ${fmtEur(m.honorarios)}</div>
         ${m.topicos ? `<p>${esc(m.topicos)}</p>` : ''}
@@ -128,6 +128,13 @@
       </article>`;
   }
 
+  // Um prazo tem aviso quando faltam exatamente os dias escolhidos, ou quando já passou (aviso diário)
+  function avisoPrazoHoje(p) {
+    if (p.concluido) return false;
+    const dd = daysUntil(p.data_limite);
+    return dd <= 0 || (p.avisos || []).includes(dd);
+  }
+
   function prazoHtml(p) {
     const dd = daysUntil(p.data_limite);
     let estado;
@@ -139,12 +146,19 @@
     else { estado = `Faltam ${dd} dia(s)`; }
     return `
       <article class="card prazo ${cls}">
-        <label class="row" style="justify-content:flex-start;cursor:pointer;color:var(--ink);margin:0">
-          <input type="checkbox" data-toggle-prazo="${p.id}" ${p.concluido ? 'checked' : ''} style="width:auto">
-          <strong>${esc(p.descricao)}</strong>
-        </label>
-        <div class="muted">${esc(p.cliente || 'Sem cliente')} · ${fmtDataSimples(p.data_limite)} · ${estado}</div>
-        <div class="actions"><button class="btn small" data-edit-prazo="${p.id}">Editar</button></div>
+        <div class="prazo-top">
+          <input type="checkbox" class="prazo-check" data-toggle-prazo="${p.id}" ${p.concluido ? 'checked' : ''} aria-label="Concluído">
+          <div class="prazo-info">
+            <strong class="prazo-titulo">${esc(p.descricao)}</strong>
+            <div class="muted">${esc(p.cliente || 'Sem cliente')}</div>
+          </div>
+          <span class="chip ${cls}">${estado}</span>
+        </div>
+        <div class="prazo-foot">
+          <span class="data-pill">${fmtDataSimples(p.data_limite)}</span>
+          ${avisoPrazoHoje(p) ? '<span class="chip urgente">Aviso hoje</span>' : ''}
+          <button class="btn small" data-edit-prazo="${p.id}">Editar</button>
+        </div>
       </article>`;
   }
 
@@ -336,6 +350,7 @@
       $('#r-topicos').value = m.topicos || '';
       $('#r-estado').value = m.estado;
       $('#r-confirmada').checked = !!m.confirmada;
+      setAvisosR(m.avisos_min || []);
       $('#d-reuniao-titulo').textContent = 'Editar reunião';
       $('#r-apagar').hidden = false;
     } else {
@@ -346,8 +361,13 @@
       if (dia) base.setHours(10, 0, 0, 0);
       else { base.setSeconds(0, 0); base.setHours(base.getHours() + 1, 0, 0, 0); }
       $('#r-inicio').value = toLocalInput(base);
+      setAvisosR([1440, 120]);
     }
     $('#d-reuniao').showModal();
+  }
+
+  function setAvisos(lista) {
+    document.querySelectorAll('input[name=aviso]').forEach((i) => { i.checked = lista.includes(Number(i.value)); });
   }
 
   function openPrazo(id) {
@@ -359,10 +379,13 @@
       $('#p-descricao').value = p.descricao;
       $('#p-cliente').value = p.cliente || '';
       $('#p-data').value = p.data_limite;
+      setAvisos(p.avisos || [3, 1, 0]);
       $('#d-prazo-titulo').textContent = 'Editar prazo';
       $('#p-apagar').hidden = false;
     } else {
       $('#p-id').value = '';
+      $('#p-data').value = dayKey(new Date());
+      setAvisos([3, 1, 0]);
       $('#d-prazo-titulo').textContent = 'Novo prazo';
       $('#p-apagar').hidden = true;
     }
@@ -382,6 +405,19 @@
     $('[data-menu]').setAttribute('aria-expanded', String(open));
   }
 
+  // ---------- avisos das reuniões ----------
+  function setAvisosR(lista) {
+    document.querySelectorAll('input[name=avisoR]').forEach((i) => { i.checked = lista.includes(Number(i.value)); });
+  }
+
+  // Uma reunião tem aviso ativo quando já chegou a hora de algum dos avisos escolhidos e ainda não passou
+  function avisoReuniaoAtivo(m) {
+    if (m.estado !== 'agendada' || m.confirmada) return false;
+    const t = new Date(m.inicio).getTime();
+    const agora = Date.now();
+    return t > agora && (m.avisos_min || []).some((min) => agora >= t - min * 60000);
+  }
+
   // ---------- alertas (número no ícone) ----------
   function isInstalada() {
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
@@ -398,8 +434,8 @@
       const t = new Date(m.inicio).getTime();
       return m.estado === 'agendada' && !m.confirmada && t > agora && t - agora <= 48 * HORA_MS;
     }).length;
-    const prazosAbertos = prazos.filter((p) => !p.concluido && daysUntil(p.data_limite) <= 0).length;
-    const total = confirmar + prazosAbertos;
+    const prazosAbertos = prazos.filter(avisoPrazoHoje).length;
+    const total = reunioes.filter(avisoReuniaoAtivo).length + prazosAbertos;
     if (!('setAppBadge' in navigator)) return;
     if (total > 0) navigator.setAppBadge(total).catch(() => {});
     else navigator.clearAppBadge().catch(() => {});
@@ -466,7 +502,8 @@
       honorarios: Number($('#r-honorarios').value) || 0,
       topicos: $('#r-topicos').value.trim() || null,
       estado: $('#r-estado').value,
-      confirmada: $('#r-confirmada').checked
+      confirmada: $('#r-confirmada').checked,
+      avisos_min: Array.from(document.querySelectorAll('input[name=avisoR]:checked')).map((i) => Number(i.value))
     };
     if (id) {
       const orig = reunioes.find((x) => x.id === id);
@@ -501,7 +538,8 @@
     const payload = {
       descricao: $('#p-descricao').value.trim(),
       cliente: $('#p-cliente').value.trim() || null,
-      data_limite: $('#p-data').value
+      data_limite: $('#p-data').value,
+      avisos: Array.from(document.querySelectorAll('input[name=aviso]:checked')).map((i) => Number(i.value))
     };
     const res = id
       ? await sb.from('prazos').update(payload).eq('id', id)
