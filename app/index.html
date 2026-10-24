@@ -33,14 +33,14 @@
   html,body{margin:0;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
   body{background:var(--bg);color:var(--ink);font:15px/1.5 Montserrat,system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
   h1,h2,h3{margin:0;line-height:1.2}
-  h2{font-size:20px;margin:18px 0 12px}
-  h3{font-size:15px;margin:0 0 10px;color:var(--navy)}
+  h2{font-size:24px;margin:20px 0 2px;letter-spacing:-.01em}
+  h3{font-size:12px;margin:0 0 12px;color:var(--navy);letter-spacing:.08em;text-transform:uppercase}
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) h3{color:#c9d3ea} }
   :root[data-theme="dark"] h3{color:#c9d3ea}
   .muted{color:var(--muted);font-size:13px}
   .hidden,[hidden]{display:none !important}
 
-  header.top{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  header.top{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 4px 16px rgba(20,33,61,.22);border-bottom:2px solid var(--gold)}
   .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
   .brand img{width:30px;height:30px;border-radius:8px}
   .menu-btn{background:transparent;border:1px solid rgba(255,255,255,.35);border-radius:10px;width:42px;height:40px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;cursor:pointer;padding:0}
@@ -58,8 +58,8 @@
   .view{display:none}
   .view.active{display:block}
 
-  .block{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
+  .block{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(20,33,61,.05),0 6px 16px rgba(20,33,61,.06)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 2px rgba(20,33,61,.05)}
   .card p{margin:6px 0 0;white-space:pre-line}
   .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
   .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -70,6 +70,9 @@
   .chip.realizada{color:var(--ok);border-color:var(--ok)}
   .chip.cancelada{color:var(--late);border-color:var(--late)}
   .chip.urgente{color:var(--late);border-color:var(--late);font-weight:600}
+  .chip.ok{color:var(--ok);border-color:var(--ok);background:#ecfdf3;font-weight:600}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .card-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 
   .btn{font:inherit;font-weight:600;border-radius:12px;border:1px solid var(--navy);background:var(--card);color:var(--navy);padding:10px 14px;cursor:pointer;width:auto}
   .btn.primary{background:var(--navy);color:#fff;width:100%;margin-top:8px}
@@ -170,6 +173,12 @@
     <!-- Hoje -->
     <section id="v-hoje" class="view active">
       <h2>Hoje</h2>
+      <p id="hoje-data" class="muted" style="margin:0 0 14px;text-transform:capitalize"></p>
+      <div id="alertas-bloco" class="block" hidden>
+        <h3>Alertas</h3>
+        <p class="muted" style="margin:0 0 12px">Ative para ver no ícone da app o número de confirmações e prazos em aberto.</p>
+        <button class="btn primary" id="btn-alertas" style="margin-top:0">Ativar alertas</button>
+      </div>
       <div class="block">
         <h3>Confirmações a fazer (próximas 48 h)</h3>
         <div id="lista-confirmar"></div>

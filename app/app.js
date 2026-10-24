@@ -97,6 +97,8 @@
 
   function renderAll() {
     renderHoje();
+    renderAlertas();
+    atualizarBadge();
     renderCal();
     renderPrazos();
     renderFact();
@@ -112,9 +114,9 @@
       <article class="card">
         <div class="row">
           <strong>${esc(m.cliente)}</strong>
-          <span class="chip ${esc(m.estado)}">${LABEL[m.estado] || esc(m.estado)}</span>
+          <div class="card-chips">${m.confirmada ? '<span class="chip ok">Confirmada</span>' : ''}<span class="chip ${esc(m.estado)}">${LABEL[m.estado] || esc(m.estado)}</span></div>
         </div>
-        <div class="muted">${fmtDataHora(m.inicio)} · ${fmtEur(m.honorarios)}${m.confirmada ? ' · ✔ confirmada' : ''}</div>
+        <div class="muted">${fmtDataHora(m.inicio)} · ${fmtEur(m.honorarios)}</div>
         ${m.topicos ? `<p>${esc(m.topicos)}</p>` : ''}
         ${enviada ? `<div style="margin-top:6px">${enviada}</div>` : ''}
         <div class="actions">
@@ -148,6 +150,7 @@
 
   // ---------- hoje ----------
   function renderHoje() {
+    $('#hoje-data').textContent = new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
     const agora = Date.now();
     const confirmar = reunioes.filter((m) => {
       const t = new Date(m.inicio).getTime();
@@ -379,11 +382,38 @@
     $('[data-menu]').setAttribute('aria-expanded', String(open));
   }
 
+  // ---------- alertas (número no ícone) ----------
+  function isInstalada() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  function renderAlertas() {
+    const pode = 'Notification' in window && isInstalada() && Notification.permission === 'default';
+    $('#alertas-bloco').hidden = !pode;
+  }
+
+  function atualizarBadge() {
+    const agora = Date.now();
+    const confirmar = reunioes.filter((m) => {
+      const t = new Date(m.inicio).getTime();
+      return m.estado === 'agendada' && !m.confirmada && t > agora && t - agora <= 48 * HORA_MS;
+    }).length;
+    const prazosAbertos = prazos.filter((p) => !p.concluido && daysUntil(p.data_limite) <= 0).length;
+    const total = confirmar + prazosAbertos;
+    if (!('setAppBadge' in navigator)) return;
+    if (total > 0) navigator.setAppBadge(total).catch(() => {});
+    else navigator.clearAppBadge().catch(() => {});
+  }
+
   // ---------- eventos ----------
   document.addEventListener('click', async (e) => {
     const el = e.target.closest('button, [data-day]');
     if (!el) return;
 
+    if (el.id === 'btn-alertas') {
+      Notification.requestPermission().then(() => { renderAlertas(); atualizarBadge(); });
+      return;
+    }
     if ('menu' in el.dataset) return toggleMenu(true);
     if ('closeMenu' in el.dataset) return toggleMenu(false);
     if (el.dataset.tab) return showTab(el.dataset.tab);
