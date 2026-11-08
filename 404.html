@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a1730">
+<title>Página não encontrada | ProLegal Solutions</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<style>
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:100 900;font-display:swap;src:url("/fonts/Montserrat-VariableFont_wght.woff") format("woff")}
+:root {
+  --navy: #0a1730; --ink: #060f20;
+  --gold: #c9a463; --gold-hi: #f1d99a;
+  --cream: #f4eee2; --muted: #a9b2c4;
+  --line: rgba(201,164,99,.38);
+  --sans: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--sans); font-size: 16px; line-height: 1.7; color: var(--cream);
+  background: var(--navy) url("/fundo-mobile.webp") center / cover no-repeat;
+  display: flex; flex-direction: column; -webkit-text-size-adjust: 100%;
+}
+body::before { content: ""; position: fixed; inset: 0; background: linear-gradient(180deg, rgba(10,23,48,.7), rgba(6,15,32,.92)); z-index: 0; }
+@media (min-width: 760px) { body { background-image: url("/fundo.webp"); } }
+header, main { position: relative; z-index: 1; }
+header { padding: 22px max(22px, env(safe-area-inset-left, 0px)); padding-top: calc(22px + env(safe-area-inset-top, 0px)); }
+.brand { display: inline-flex; align-items: center; gap: 12px; color: var(--cream); text-decoration: none; font-weight: 500; letter-spacing: .06em; }
+.brand img { width: 30px; height: 26px; }
+main { flex: 1; display: flex; align-items: center; padding: 24px max(22px, env(safe-area-inset-left, 0px)) calc(48px + env(safe-area-inset-bottom, 0px)); }
+.box { width: 100%; max-width: 640px; margin: 0 auto; }
+.code { color: var(--gold); font-size: .85rem; letter-spacing: .24em; font-weight: 500; }
+h1 { font-weight: 300; font-size: clamp(2rem, 7vw, 3.2rem); line-height: 1.12; margin-top: 14px; text-wrap: balance; }
+p { margin-top: 20px; color: var(--muted); max-width: 46ch; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 28px; border-radius: 2px; border: 1px solid var(--gold); font: 500 .85rem var(--sans); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; text-align: center; flex: 1 1 200px; transition: background .25s, color .25s; }
+.btn-gold { background: var(--gold); color: var(--ink); }
+.btn-gold:hover { background: var(--gold-hi); border-color: var(--gold-hi); }
+.btn-line { color: var(--gold-hi); }
+.btn-line:hover { background: var(--gold); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/"><img src="/prolegal-balanca.svg" alt=""><span>PROLEGAL SOLUTIONS</span></a>
+</header>
+<main>
+  <div class="box">
+    <p class="code" style="margin-top:0">ERRO 404</p>
+    <h1>Esta página não existe.</h1>
+    <p>O endereço pode estar errado ou a página foi movida. Volte ao início para encontrar o que procura ou fale connosco diretamente.</p>
+    <div class="row">
+      <a class="btn btn-gold" href="/">Voltar ao início</a>
+      <a class="btn btn-line" href="/#contacto">Contactar</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>
