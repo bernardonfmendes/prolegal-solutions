@@ -1,0 +1,7 @@
+# GitHub Pages: ficheiros internos que não devem ser publicados no site.
+# (Continuam no repositório; apenas não ficam acessíveis em prolegalsolutions.pt.)
+exclude:
+  - README.md
+  - app/LEIA-ME.md
+  - app/supabase.sql
+  - app/icons/LEIA-ME.txt

@@ -1,11 +1,12 @@
 // Prolegal Solutions: service worker. Guarda apenas a "casca" da app para abrir sem ligação.
 // Os dados (reuniões, prazos) vêm sempre do Supabase e nunca são guardados em cache.
-const CACHE = 'prolegal-app-v1';
+const CACHE = 'prolegal-app-v2';
 const SHELL = [
   './',
   'index.html',
   'app.js',
   'config.js',
+  'vendor/supabase.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',
@@ -27,7 +28,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  // Só tratamos pedidos GET ao próprio site. Supabase e CDN seguem diretamente para a rede.
+  // Só tratamos pedidos GET ao próprio site. Supabase segue diretamente para a rede.
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
 
   event.respondWith(

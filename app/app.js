@@ -2,6 +2,13 @@
 (() => {
   'use strict';
 
+  // Proteção contra clickjacking: a app nunca deve abrir dentro de uma moldura de outro site.
+  if (window.top !== window.self) {
+    document.documentElement.innerHTML = '';
+    try { window.top.location.replace(window.location.href); } catch (e) { /* bloqueado pelo browser */ }
+    return;
+  }
+
   const cfg = window.APP_CONFIG || {};
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
