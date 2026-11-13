@@ -4,7 +4,16 @@ import { cifrar, vapid } from './webpush.ts';
 
 const URL_SB = Deno.env.get('SUPABASE_URL')!;
 const CHAVE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const VAPID_JWK = JSON.parse(Deno.env.get('VAPID_JWK')!);
+// Lido só quando é preciso: um segredo em falta dá uma mensagem clara,
+// em vez de matar a função no arranque com um erro sem explicação.
+function lerVapid() {
+  const bruto = Deno.env.get('VAPID_JWK');
+  if (!bruto) throw new Error('Falta o segredo VAPID_JWK nas Edge Functions.');
+  let jwk;
+  try { jwk = JSON.parse(bruto); } catch { throw new Error('VAPID_JWK não é JSON válido.'); }
+  if (!jwk || jwk.kty !== 'EC' || !jwk.d || !jwk.x || !jwk.y) throw new Error('VAPID_JWK não tem o formato esperado (kty, d, x, y).');
+  return jwk;
+}
 const ASSUNTO = Deno.env.get('VAPID_SUBJECT') || 'mailto:geral@prolegalsolutions.pt';
 const ZONA = 'Europe/Lisbon';
 const HORA_PRAZO = 8; // os avisos de prazos saem de manhã
@@ -50,7 +59,7 @@ async function enviar(sub: any, dados: Record<string, unknown>) {
   const r = await fetch(sub.endpoint, {
     method: 'POST',
     headers: {
-      Authorization: await vapid(sub.endpoint, VAPID_JWK, ASSUNTO),
+      Authorization: await vapid(sub.endpoint, lerVapid(), ASSUNTO),
       'Content-Encoding': 'aes128gcm',
       'Content-Type': 'application/octet-stream',
       TTL: '86400'
@@ -65,6 +74,7 @@ Deno.serve(async () => {
   const relatorio = { reunioes: 0, prazos: 0, enviados: 0, removidos: 0, erros: [] as string[] };
 
   try {
+    lerVapid();   // falha já aqui, com motivo, se o segredo não estiver posto
     const limite = new Date(agora.getTime() + 8 * 86400000).toISOString();
     const [reunioes, prazos, subs] = await Promise.all([
       sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local&estado=eq.agendada&inicio=gte.${agora.toISOString()}&inicio=lte.${limite}`),
