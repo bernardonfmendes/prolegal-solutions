@@ -120,7 +120,9 @@
   .dpop-top .x{border:0;background:var(--line);color:var(--ink);width:32px;height:32px;border-radius:50%;font-size:17px;line-height:1;flex:0 0 32px}
   .dpop-body{padding:12px 16px 4px}
   .dpop-novo{display:flex;gap:8px;padding:4px 16px 0}
-  .dpop-novo .btn{flex:1}
+  .dpop-novo{flex-wrap:wrap}
+  .dpop-novo .btn{flex:1 1 30%;padding:10px 8px}
+  body:not(.tem-pessoal) .so-pessoal{display:none}
   /* categorias */
   /* Enquanto a migração do calendário não correr, estes campos não têm onde ser guardados */
   body.sem-calendario .so-calendario{display:none}
@@ -331,6 +333,7 @@
     <button class="item" data-tab="v-fact">Faturação</button>
     <button class="item so-calendario" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 4</p>
   </nav>
 </div>
 
@@ -370,6 +373,7 @@
     <div class="dpop-novo">
       <button type="button" class="btn" data-dpop-reuniao>+ Reunião</button>
       <button type="button" class="btn" data-dpop-prazo>+ Prazo</button>
+      <button type="button" class="btn so-pessoal" data-dpop-pessoal>+ Pessoal</button>
     </div>
   </div>
 </div>
@@ -486,6 +490,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

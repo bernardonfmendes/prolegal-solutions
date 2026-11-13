@@ -103,6 +103,7 @@
     esquemaNovo = !!(c && !c.error);
     categorias = esquemaNovo ? (c.data || []) : [];
     document.body.classList.toggle('sem-calendario', !esquemaNovo);
+    document.body.classList.toggle('tem-pessoal', categorias.some((c) => c.pessoal));
     renderAll();
   }
 
@@ -452,7 +453,7 @@
     await loadAll();
   }
 
-  function openReuniao(id, dia) {
+  function openReuniao(id, dia, pessoal) {
     const f = $('#f-reuniao');
     f.reset();
     if (id) {
@@ -478,7 +479,7 @@
       $('#r-apagar').hidden = false;
     } else {
       $('#r-id').value = '';
-      $('#d-reuniao-titulo').textContent = 'Nova reunião';
+      $('#d-reuniao-titulo').textContent = pessoal ? 'Novo registo pessoal' : 'Nova reunião';
       $('#r-apagar').hidden = true;
       const base = dia ? new Date(dia) : new Date();
       if (dia) base.setHours(10, 0, 0, 0);
@@ -489,7 +490,8 @@
       $('#r-diatodo').checked = false;
       $('#r-local').value = '';
       $('#r-repetir').value = 'nunca';
-      encherCats('#r-cat', null, 'Reunião');
+      const cp = pessoal ? categorias.find((c) => c.pessoal) : null;
+      encherCats('#r-cat', cp ? cp.id : null, 'Reunião');
       aplicarModoPessoal();
       setAvisosR([1440, 120]);
     }
@@ -627,6 +629,7 @@
     if ('fecharDpop' in el.dataset) return fecharDPop();
     if ('dpopReuniao' in el.dataset) { fecharDPop(); return openReuniao(null, diaSel); }
     if ('dpopPrazo' in el.dataset) { fecharDPop(); return openPrazo(null, diaSel); }
+    if ('dpopPessoal' in el.dataset) { fecharDPop(); return openReuniao(null, diaSel, true); }
     if ('novaCat' in el.dataset) return openCat(null);
     if (el.dataset.editCat) return openCat(el.dataset.editCat);
     if ('novaReuniao' in el.dataset) return openReuniao(null, null);
