@@ -580,7 +580,7 @@
   }
 
   // ---------- alertas no telemóvel ----------
-  const VAPID = 'BI_gkgUHsSsBHIw2RD2ddPL0TGfhNUgmDFOatDB7T7YGgA0omjmLbXp7jt94T0ayt3QOS8DbQbBxrsJiaMoNLM0';
+  const VAPID = 'BLEUYbAp_YlD1VJEyySs9U-O1DjVD85t37vQFkH1zpS9rQ8aPGJRyBr_laMKVlJbOmiF6sJom7EENbhJtt3iCOE';
 
   function suportaPush() {
     return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
