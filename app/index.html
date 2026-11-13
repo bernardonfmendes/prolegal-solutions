@@ -184,12 +184,19 @@
   .check input{width:auto}
   input[type=datetime-local],input[type=date],input[type=month],select{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%}
   input:-webkit-autofill,textarea:-webkit-autofill,select:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px var(--bg) inset;-webkit-text-fill-color:var(--ink);caret-color:var(--ink)}
-  dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100vw - 24px));background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100vw - 24px));background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3);
+    max-height:min(88dvh,calc(100dvh - 24px));overflow:hidden}
+  dialog > form{display:flex;flex-direction:column;max-height:inherit;min-height:0}
   dialog::backdrop{background:rgba(10,16,30,.55)}
-  .dlg-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 0}
-  .dlg-body{padding:6px 18px 18px}
+  .dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 10px 12px 18px;
+    position:sticky;top:0;z-index:2;background:var(--card);border-bottom:1px solid var(--line);flex:0 0 auto}
+  .dlg-head h2,.dlg-head h3{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dlg-body{padding:12px 18px 18px;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
+  .dlg-body + .dlg-body{overflow:visible;flex:0 0 auto;border-top:1px solid var(--line);padding-top:12px;background:var(--card)}
   .dlg-foot{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
-  .x{background:none;border:0;font-size:22px;color:var(--muted);cursor:pointer}
+  .x{background:none;border:0;font-size:22px;color:var(--muted);cursor:pointer;
+    min-width:44px;min-height:44px;display:grid;place-items:center;border-radius:12px;flex:0 0 44px}
+  .x:active{background:var(--line)}
 
   .auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
   .auth-box{width:min(380px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
@@ -329,7 +336,10 @@
 <!-- Diálogo: categoria -->
 <dialog id="d-cat">
   <form id="f-cat" method="dialog">
-    <h3 id="d-cat-titulo">Nova categoria</h3>
+    <div class="dlg-head">
+      <h2 id="d-cat-titulo" style="margin:0">Nova categoria</h2>
+      <button type="button" class="x" data-close aria-label="Fechar">&times;</button>
+    </div>
     <div class="dlg-body">
       <input type="hidden" id="c-id">
       <label for="c-nome">Nome</label>
