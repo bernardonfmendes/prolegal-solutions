@@ -129,7 +129,7 @@
           <strong>${esc(m.cliente)}</strong>
           <div class="card-chips">${avisoReuniaoAtivo(m) ? '<span class="chip urgente">Aviso</span>' : ''}${m.confirmada ? '<span class="chip ok">Confirmada</span>' : ''}<span class="chip ${esc(m.estado)}">${LABEL[m.estado] || esc(m.estado)}</span></div>
         </div>
-        <div class="muted">${fmtDataHora(m.inicio)}${m.fim && !m.dia_todo ? ' – ' + new Date(m.fim).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''} · ${fmtEur(m.honorarios)}</div>
+        <div class="muted">${fmtDataHora(m.inicio)}${m.fim && !m.dia_todo ? ' – ' + new Date(m.fim).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}${ehPessoal(m.categoria_id) ? '' : ' · ' + fmtEur(m.honorarios)}</div>
         <div class="cat-nome" style="--cat:${esc(cat.cor)}">${esc(cat.nome)}${m.local ? ' · ' + esc(m.local) : ''}</div>
         ${m.topicos ? `<p>${esc(m.topicos)}</p>` : ''}
         ${enviada ? `<div style="margin-top:6px">${enviada}</div>` : ''}
@@ -216,6 +216,20 @@
     const c = categorias.find((k) => k.id === item.categoria_id);
     return c || (tipo === 'prazo' ? CAT_PRAZO : CAT_REUNIAO);
   }
+  function ehPessoal(catId) {
+    const c = categorias.find((k) => k.id === catId);
+    return !!(c && c.pessoal);
+  }
+  // Num registo pessoal não há cliente nem honorários: o formulário adapta-se
+  function aplicarModoPessoal(limpar) {
+    const pessoal = ehPessoal($('#r-cat').value);
+    $('#d-reuniao').classList.toggle('pessoal', pessoal);
+    $('#lbl-cliente').textContent = pessoal ? 'Título' : 'Nome do cliente';
+    $('#r-cliente').placeholder = pessoal ? 'ex.: Almoço, médico, ginásio' : '';
+    // Só limpa quando é a utilizadora a mudar de categoria, nunca ao abrir um registo
+    if (pessoal && limpar) { $('#r-telefone').value = ''; $('#r-email').value = ''; $('#r-honorarios').value = 0; }
+  }
+
   function rgba(hex, a) {
     const h = String(hex || '#1f3160').replace('#', '');
     const n = parseInt(h.length === 3 ? h.split('').map((x) => x + x).join('') : h, 16);
@@ -307,7 +321,7 @@
     const soma = (arr) => arr.reduce((s, r) => s + Number(r.honorarios || 0), 0);
     const doMes = reunioes.filter((r) => {
       const d = new Date(r.inicio);
-      return d.getFullYear() === y && d.getMonth() === mNum - 1;
+      return d.getFullYear() === y && d.getMonth() === mNum - 1 && !ehPessoal(r.categoria_id);
     });
     const realizadas = doMes.filter((r) => r.estado === 'realizada');
     const agendadas = doMes.filter((r) => r.estado === 'agendada');
@@ -361,10 +375,12 @@
     if (atual) {
       $('#c-id').value = atual.id;
       $('#c-nome').value = atual.nome;
+      $('#c-pessoal').checked = !!atual.pessoal;
       $('#d-cat-titulo').textContent = 'Editar categoria';
       $('#c-apagar').hidden = false;
     } else {
       $('#c-id').value = '';
+      $('#c-pessoal').checked = false;
       $('#d-cat-titulo').textContent = 'Nova categoria';
       $('#c-apagar').hidden = true;
     }
@@ -452,6 +468,7 @@
       $('#r-local').value = m.local || '';
       $('#r-repetir').value = m.repetir || 'nunca';
       encherCats('#r-cat', m.categoria_id, 'Reunião');
+      aplicarModoPessoal();
       $('#r-honorarios').value = m.honorarios ?? 0;
       $('#r-topicos').value = m.topicos || '';
       $('#r-estado').value = m.estado;
@@ -473,6 +490,7 @@
       $('#r-local').value = '';
       $('#r-repetir').value = 'nunca';
       encherCats('#r-cat', null, 'Reunião');
+      aplicarModoPessoal();
       setAvisosR([1440, 120]);
     }
     $('#d-reuniao').showModal();
@@ -634,6 +652,7 @@
   });
 
   document.addEventListener('change', (e) => {
+    if (e.target.id === 'r-cat') aplicarModoPessoal(true);
     if (e.target.dataset.togglePrazo) togglePrazo(e.target.dataset.togglePrazo, e.target.checked);
     if (e.target.id === 'fact-mes') renderFact();
   });
@@ -725,7 +744,7 @@
   $('#f-cat').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = $('#c-id').value;
-    const payload = { nome: $('#c-nome').value.trim(), cor: corEscolhida() };
+    const payload = { nome: $('#c-nome').value.trim(), cor: corEscolhida(), pessoal: $('#c-pessoal').checked };
     if (!payload.nome) { toast('Indique o nome.'); return; }
     const res = id
       ? await sb.from('categorias').update(payload).eq('id', id)

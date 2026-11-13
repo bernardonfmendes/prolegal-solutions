@@ -124,6 +124,7 @@
   /* categorias */
   /* Enquanto a migração do calendário não correr, estes campos não têm onde ser guardados */
   body.sem-calendario .so-calendario{display:none}
+  #d-reuniao.pessoal .so-trabalho{display:none}
   .cat-nome{color:var(--cat);font-weight:600}
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .cat-nome{color:color-mix(in srgb, var(--cat) 42%, white)} }
   :root[data-theme="dark"] .cat-nome{color:color-mix(in srgb, var(--cat) 42%, white)}
@@ -344,6 +345,8 @@
       <input type="hidden" id="c-id">
       <label for="c-nome">Nome</label>
       <input id="c-nome" required maxlength="40" placeholder="ex.: Audiência">
+      <label class="check"><input type="checkbox" id="c-pessoal"> Não é trabalho</label>
+      <p class="muted" style="margin:-4px 0 10px;font-size:12px">Esconde o cliente e os honorários, e fica de fora da faturação.</p>
       <label>Cor</label>
       <div class="cores" id="c-cores" role="group" aria-label="Cor"></div>
     </div>
@@ -380,12 +383,12 @@
     </div>
     <div class="dlg-body">
       <input type="hidden" id="r-id">
-      <label for="r-cliente">Nome do cliente</label>
+      <label for="r-cliente" id="lbl-cliente">Nome do cliente</label>
       <input id="r-cliente" required maxlength="120">
-      <label for="r-telefone">Telemóvel (para WhatsApp)</label>
+      <div class="so-trabalho"><label for="r-telefone">Telemóvel (para WhatsApp)</label>
       <input id="r-telefone" type="tel" inputmode="tel" maxlength="20" placeholder="ex.: 912 345 678">
       <label for="r-email">E-mail</label>
-      <input id="r-email" type="email" maxlength="120" placeholder="ex.: cliente@email.pt">
+      <input id="r-email" type="email" maxlength="120" placeholder="ex.: cliente@email.pt"></div>
       <div class="so-calendario"><label for="r-cat">Categoria</label>
       <select id="r-cat"></select></div>
       <label for="r-inicio">Data e hora</label>
@@ -401,8 +404,8 @@
         <option value="quinzenal">De 15 em 15 dias</option><option value="mensal">Todos os meses</option>
         <option value="anual">Todos os anos</option>
       </select></div>
-      <label for="r-honorarios">Honorários (€)</label>
-      <input id="r-honorarios" type="number" min="0" step="0.01" inputmode="decimal" value="0">
+      <div class="so-trabalho"><label for="r-honorarios">Honorários (€)</label>
+      <input id="r-honorarios" type="number" min="0" step="0.01" inputmode="decimal" value="0"></div>
       <label for="r-topicos">Tópicos da reunião</label>
       <textarea id="r-topicos" maxlength="2000"></textarea>
       <label for="r-estado">Estado</label>

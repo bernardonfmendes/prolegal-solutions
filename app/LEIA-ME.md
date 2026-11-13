@@ -21,6 +21,13 @@ Nota: `supabase.sql` descreve a versão inicial e está desactualizado face à b
 de dados a sério, que usa `telefone` e `email` (não `contacto`) e já tem os
 avisos por registo (`reunioes.avisos_min` e `prazos.avisos`).
 
+## Registos pessoais
+Uma categoria pode ser marcada como "Não é trabalho" (em Categorias). Ao escolhê-la
+numa marcação, o campo passa a "Título" e desaparecem o cliente, o telemóvel, o email
+e os honorários. Esses registos ficam de fora da faturação, mas continuam no calendário.
+
+Activa-se correndo uma vez `supabase-pessoal.sql` no SQL Editor.
+
 ## Instalar no telemóvel
 - iPhone: abrir o endereço no Safari → Partilhar → "Adicionar ao ecrã principal".
 - Android: abrir no Chrome → menu ⋮ → "Instalar aplicação".
