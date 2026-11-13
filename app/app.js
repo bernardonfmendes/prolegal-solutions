@@ -227,6 +227,11 @@
     $('#d-reuniao').classList.toggle('pessoal', pessoal);
     $('#lbl-cliente').textContent = pessoal ? 'Título' : 'Nome do cliente';
     $('#r-cliente').placeholder = pessoal ? 'ex.: Almoço, médico, ginásio' : '';
+    $('#lbl-topicos').textContent = pessoal ? 'Notas' : 'Tópicos da reunião';
+    $('#lbl-avisos').textContent = pessoal ? 'Avisar-me antes' : 'Avisar-me antes da reunião';
+    $('#r-local').placeholder = pessoal ? 'ex.: casa, clínica, ginásio' : 'Escritório, tribunal ou videochamada';
+    // Um registo pessoal não tem estado nem confirmação de cliente
+    if (pessoal) { $('#r-estado').value = 'agendada'; $('#r-confirmada').checked = false; }
     // Só limpa quando é a utilizadora a mudar de categoria, nunca ao abrir um registo
     if (pessoal && limpar) { $('#r-telefone').value = ''; $('#r-email').value = ''; $('#r-honorarios').value = 0; }
   }

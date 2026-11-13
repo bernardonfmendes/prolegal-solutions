@@ -333,7 +333,7 @@
     <button class="item" data-tab="v-fact">Faturação</button>
     <button class="item so-calendario" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
-    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 4</p>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 5</p>
   </nav>
 </div>
 
@@ -401,7 +401,7 @@
       <input id="r-fim" type="datetime-local">
       <label class="check"><input type="checkbox" id="r-diatodo"> Dia todo</label>
       <label for="r-local">Local</label>
-      <input id="r-local" maxlength="200" placeholder="Escritório, tribunal ou videochamada">
+      <input id="r-local" maxlength="200">
       <label for="r-repetir">Repetir</label>
       <select id="r-repetir">
         <option value="nunca">Nunca</option><option value="semanal">Todas as semanas</option>
@@ -410,16 +410,16 @@
       </select></div>
       <div class="so-trabalho"><label for="r-honorarios">Honorários (€)</label>
       <input id="r-honorarios" type="number" min="0" step="0.01" inputmode="decimal" value="0"></div>
-      <label for="r-topicos">Tópicos da reunião</label>
+      <label for="r-topicos" id="lbl-topicos">Tópicos da reunião</label>
       <textarea id="r-topicos" maxlength="2000"></textarea>
-      <label for="r-estado">Estado</label>
+      <div class="so-trabalho"><label for="r-estado">Estado</label>
       <select id="r-estado">
         <option value="agendada">Agendada</option>
         <option value="realizada">Realizada</option>
         <option value="cancelada">Cancelada</option>
-      </select>
+      </select></div>
       <fieldset class="avisos-box">
-        <legend>Avisar-me antes da reunião</legend>
+        <legend id="lbl-avisos">Avisar-me antes da reunião</legend>
         <div class="avisos-grid">
           <label><input type="checkbox" name="avisoR" value="1440" checked> 24 h antes</label>
           <label><input type="checkbox" name="avisoR" value="120" checked> 2 h antes</label>
@@ -427,7 +427,7 @@
           <label><input type="checkbox" name="avisoR" value="0"> Na hora</label>
         </div>
       </fieldset>
-      <label class="check"><input type="checkbox" id="r-confirmada"> Confirmada pelo cliente</label>
+      <label class="check so-trabalho"><input type="checkbox" id="r-confirmada"> Confirmada pelo cliente</label>
     </div>
     <div class="dlg-body" style="padding-top:0">
       <button class="btn primary" type="submit">Guardar</button>
@@ -490,6 +490,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
