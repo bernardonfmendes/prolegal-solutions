@@ -254,8 +254,10 @@
       <p id="hoje-data" class="muted" style="margin:0 0 14px;text-transform:capitalize"></p>
       <div id="alertas-bloco" class="block" hidden>
         <h3>Alertas</h3>
-        <p class="muted" style="margin:0 0 12px">Ative para ver no ícone da app o número de confirmações e prazos em aberto.</p>
+        <p class="muted" id="alertas-texto" style="margin:0 0 12px"></p>
         <button class="btn primary" id="btn-alertas" style="margin-top:0">Ativar alertas</button>
+        <button class="btn" id="btn-alertas-off" style="margin-top:0" hidden>Desligar alertas</button>
+        <p class="muted" id="alertas-nota" style="margin:10px 0 0;font-size:12px"></p>
       </div>
       <div class="block">
         <h3>Confirmações a fazer (próximas 48 h)</h3>
@@ -333,7 +335,7 @@
     <button class="item" data-tab="v-fact">Faturação</button>
     <button class="item so-calendario" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
-    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 5</p>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 6</p>
   </nav>
 </div>
 
@@ -490,6 +492,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

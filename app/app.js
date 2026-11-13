@@ -579,9 +579,96 @@
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   }
 
-  function renderAlertas() {
-    const pode = 'Notification' in window && isInstalada() && Notification.permission === 'default';
-    $('#alertas-bloco').hidden = !pode;
+  // ---------- alertas no telemóvel ----------
+  const VAPID = 'BI_gkgUHsSsBHIw2RD2ddPL0TGfhNUgmDFOatDB7T7YGgA0omjmLbXp7jt94T0ayt3QOS8DbQbBxrsJiaMoNLM0';
+
+  function suportaPush() {
+    return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+  }
+  function b64ParaBytes(b64) {
+    const t = (b64 + '='.repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+    return Uint8Array.from(atob(t), (c) => c.charCodeAt(0));
+  }
+
+  // navigator.serviceWorker.ready nunca resolve se o registo falhar, por isso há um limite
+  function comLimite(promessa, ms) {
+    return Promise.race([promessa, new Promise((r) => setTimeout(() => r(null), ms))]);
+  }
+  async function subscricaoAtual() {
+    if (!suportaPush()) return null;
+    try {
+      const reg = await comLimite(navigator.serviceWorker.ready, 3000);
+      return reg ? await reg.pushManager.getSubscription() : null;
+    } catch (e) { return null; }
+  }
+
+  async function ligarAlertas() {
+    if (!suportaPush()) { toast('Este telemóvel não suporta alertas.'); return; }
+    if (!isInstalada()) { toast('Adicione a app ao ecrã principal para receber alertas.'); return; }
+    try {
+      const permissao = await Notification.requestPermission();
+      if (permissao !== 'granted') { toast('Sem autorização, não é possível enviar alertas.'); return renderAlertas(); }
+      const reg = await comLimite(navigator.serviceWorker.ready, 8000);
+      if (!reg) { toast('A app ainda está a preparar-se. Tente outra vez daqui a pouco.'); return; }
+      const sub = (await reg.pushManager.getSubscription())
+        || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ParaBytes(VAPID) }));
+      const j = sub.toJSON();
+      const { error } = await sb.from('push_subs').upsert(
+        { user_id: user.id, endpoint: sub.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, ultimo_erro: null },
+        { onConflict: 'endpoint' }
+      );
+      if (error) { toast('Erro a guardar: ' + error.message); return; }
+      toast('Alertas ligados neste telemóvel');
+    } catch (e) {
+      toast('Não foi possível ligar os alertas: ' + (e && e.message ? e.message : e));
+    }
+    renderAlertas();
+    atualizarBadge();
+  }
+
+  async function desligarAlertas() {
+    const sub = await subscricaoAtual();
+    if (sub) {
+      await sb.from('push_subs').delete().eq('endpoint', sub.endpoint);
+      await sub.unsubscribe().catch(() => {});
+    }
+    toast('Alertas desligados neste telemóvel');
+    renderAlertas();
+  }
+
+  async function renderAlertas() {
+    const bloco = $('#alertas-bloco');
+    if (!bloco) return;
+    const texto = $('#alertas-texto'), nota = $('#alertas-nota');
+    const on = $('#btn-alertas'), off = $('#btn-alertas-off');
+    bloco.hidden = false;
+
+    if (!suportaPush()) {
+      on.hidden = true; off.hidden = true;
+      texto.textContent = 'Este telemóvel não suporta alertas.';
+      nota.textContent = '';
+      return;
+    }
+    if (!isInstalada()) {
+      on.hidden = true; off.hidden = true;
+      texto.textContent = 'Para receber alertas, adicione a app ao ecrã principal.';
+      nota.textContent = 'No Safari: Partilhar → Adicionar ao ecrã principal. Depois abra a app por esse ícone.';
+      return;
+    }
+    texto.textContent = 'Ligue para receber aviso antes de cada reunião e prazo, mesmo com a app fechada.';
+    nota.textContent = '';
+    on.hidden = false;
+    off.hidden = true;
+
+    const ligado = !!(await subscricaoAtual()) && Notification.permission === 'granted';
+    texto.textContent = ligado
+      ? 'Os alertas estão ligados neste telemóvel. Recebe aviso antes de cada reunião e prazo, mesmo com a app fechada.'
+      : 'Ligue para receber aviso antes de cada reunião e prazo, mesmo com a app fechada.';
+    on.hidden = ligado;
+    off.hidden = !ligado;
+    nota.textContent = Notification.permission === 'denied'
+      ? 'A autorização foi recusada. Para voltar a ligar: Definições do iPhone → Notificações → Prolegal Solutions.'
+      : 'Cada telemóvel liga-se à parte.';
   }
 
   function atualizarBadge() {
@@ -604,10 +691,8 @@
     const el = e.target.closest('button, [data-day]');
     if (!el) return;
 
-    if (el.id === 'btn-alertas') {
-      Notification.requestPermission().then(() => { renderAlertas(); atualizarBadge(); });
-      return;
-    }
+    if (el.id === 'btn-alertas') return ligarAlertas();
+    if (el.id === 'btn-alertas-off') return desligarAlertas();
     if ('menu' in el.dataset) return toggleMenu(true);
     if ('closeMenu' in el.dataset) return toggleMenu(false);
     if (el.dataset.tab) return showTab(el.dataset.tab);
