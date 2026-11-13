@@ -67,6 +67,8 @@
 
   .chip{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
   .chip.agendada{color:var(--navy);border-color:var(--navy-2)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .chip.agendada{color:#c9d3ea;border-color:#5b6a8c} }
+  :root[data-theme="dark"] .chip.agendada{color:#c9d3ea;border-color:#5b6a8c}
   .chip.realizada{color:var(--ok);border-color:var(--ok)}
   .chip.cancelada{color:var(--late);border-color:var(--late)}
   .chip.urgente{color:var(--late);border-color:var(--late);font-weight:600}
@@ -83,14 +85,60 @@
   .btn.small{padding:6px 10px;font-size:13px;border-radius:10px}
   .btn:disabled{opacity:.5;cursor:not-allowed}
 
-  .cal-head,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-head,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  #v-cal .block{padding:8px}
   .cal-head span{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
-  .cal-day{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;aspect-ratio:1/1;font:inherit;color:var(--ink);cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .cal-day{position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;min-height:92px;font:inherit;color:var(--ink);cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
   .cal-day.out{opacity:.35}
-  .cal-day.today{border-color:var(--gold);font-weight:700}
+  .cal-day.today{border-color:var(--line)}
   .cal-day.sel{background:var(--navy);color:#fff;border-color:var(--navy)}
-  .cal-day i{font-style:normal;font-size:10px;background:var(--gold);color:#fff;border-radius:999px;padding:0 6px;line-height:16px}
+  .cal-day{display:flex;flex-direction:column;justify-content:flex-start;gap:2px;padding:3px;align-items:stretch;overflow:hidden;text-align:left;min-height:76px}
+  .cal-day .n{font-size:12px;font-weight:600;align-self:flex-start;min-width:19px;height:19px;display:grid;place-items:center;border-radius:50%}
+  .cal-day.today{border-color:var(--line)}
+  .cal-day.today .n{background:var(--gold);color:#fff}
+  .cal-day.sel{background:var(--card);color:var(--ink);border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+  .chip-ev{font-size:9.5px;line-height:1.35;font-weight:600;border-radius:4px;padding:1px 3px;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;background:var(--c-bg);color:var(--c-fg)}
+  .chip-ev.lembrete{background:transparent;padding-left:7px;position:relative}
+  .chip-ev.lembrete::before{content:"";position:absolute;left:1px;top:3.5px;width:3.5px;height:3.5px;border-radius:50%;background:var(--c-fg)}
+  .chip-ev.feito{text-decoration:line-through;opacity:.55}
+  .cal-mais{font-size:9.5px;color:var(--muted);font-weight:600;padding-left:3px}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .chip-ev{color:color-mix(in srgb, var(--c-fg) 45%, white)} }
+  :root[data-theme="dark"] .chip-ev{color:color-mix(in srgb, var(--c-fg) 45%, white)}
+  .cal-pista{color:var(--muted);font-size:12px;text-align:center;margin:14px 8px 0;line-height:1.5}
+  /* janela do dia */
+  .dpop{position:fixed;inset:0;z-index:30;display:none}
+  .dpop[open]{display:block}
+  .dpop .fundo{position:absolute;inset:0;background:rgba(10,16,30,.5)}
+  .dpop .painel{position:absolute;left:0;right:0;bottom:0;max-height:80%;overflow:auto;background:var(--bg);
+    border-radius:18px 18px 0 0;padding:0 0 calc(18px + env(safe-area-inset-bottom))}
+  .dpop-top{position:sticky;top:0;background:var(--bg);display:flex;align-items:flex-start;justify-content:space-between;
+    gap:10px;padding:14px 16px 12px;border-bottom:1px solid var(--line)}
+  .dpop-top h3{margin:0;font-size:16px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink)}
+  .dpop-top h3::first-letter{text-transform:uppercase}
+  .dpop-top .sub{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px;text-transform:none}
+  .dpop-top .x{border:0;background:var(--line);color:var(--ink);width:32px;height:32px;border-radius:50%;font-size:17px;line-height:1;flex:0 0 32px}
+  .dpop-body{padding:12px 16px 4px}
+  .dpop-novo{display:flex;gap:8px;padding:4px 16px 0}
+  .dpop-novo .btn{flex:1}
+  /* categorias */
+  /* Enquanto a migração do calendário não correr, estes campos não têm onde ser guardados */
+  body.sem-calendario .so-calendario{display:none}
+  .cat-nome{color:var(--cat);font-weight:600}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .cat-nome{color:color-mix(in srgb, var(--cat) 42%, white)} }
+  :root[data-theme="dark"] .cat-nome{color:color-mix(in srgb, var(--cat) 42%, white)}
+  .card.cat-borda{border-left:3px solid var(--cat)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .card.cat-borda{border-left-color:color-mix(in srgb, var(--cat) 55%, white)} }
+  :root[data-theme="dark"] .card.cat-borda{border-left-color:color-mix(in srgb, var(--cat) 55%, white)}
+  .cat-dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 11px}
+  .cat-linha{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .cat-linha:last-child{border-bottom:0}
+  .cat-linha .nome{flex:1;font-weight:600}
+  .cores{display:flex;flex-wrap:wrap;gap:9px}
+  .cores button{width:32px;height:32px;border-radius:50%;border:2px solid transparent;padding:0}
+  .cores button[aria-pressed="true"]{border-color:var(--ink)}
   .cal-nav{display:flex;align-items:center;justify-content:space-between;margin:10px 0}
+  .cap::first-letter{text-transform:uppercase}
 
   .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
   .stat b{display:block;font-size:22px;color:var(--navy)}
@@ -191,7 +239,7 @@
 
   <main>
     <!-- Hoje -->
-    <section id="v-hoje" class="view active">
+    <section id="v-hoje" class="view">
       <h2>Hoje</h2>
       <p id="hoje-data" class="muted" style="margin:0 0 14px;text-transform:capitalize"></p>
       <div id="alertas-bloco" class="block" hidden>
@@ -215,18 +263,18 @@
     </section>
 
     <!-- Calendário -->
-    <section id="v-cal" class="view">
+    <section id="v-cal" class="view active">
       <h2>Calendário</h2>
       <div class="cal-nav">
         <button class="btn small" data-mes="-1" aria-label="Mês anterior">‹</button>
-        <strong id="cal-titulo" style="text-transform:capitalize"></strong>
+        <strong id="cal-titulo" class="cap"></strong>
         <button class="btn small" data-mes="1" aria-label="Mês seguinte">›</button>
       </div>
       <div class="block">
         <div class="cal-head"><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span><span>D</span></div>
         <div id="cal-grid" class="cal-grid" style="margin-top:4px"></div>
       </div>
-      <div id="cal-dia"></div>
+      <p class="cal-pista">Toque num dia para ver o que tem. Toque duas vezes para marcar.</p>
     </section>
 
     <!-- Prazos -->
@@ -237,6 +285,13 @@
     </section>
 
     <!-- Faturação -->
+    <section id="v-cats" class="view">
+      <h2>Categorias</h2>
+      <p class="muted" style="margin:0 0 12px">Cada categoria tem uma cor, que é a cor que aparece no calendário.</p>
+      <div class="block"><div id="cats-lista"></div></div>
+      <button type="button" class="btn primary" data-nova-cat style="margin-top:12px">+ Nova categoria</button>
+    </section>
+
     <section id="v-fact" class="view">
       <h2>Valor faturado</h2>
       <label for="fact-mes" class="muted">Mês</label>
@@ -262,12 +317,48 @@
       <strong>Menu</strong>
       <button type="button" class="x" data-close-menu aria-label="Fechar menu">×</button>
     </div>
-    <button class="item on" data-tab="v-hoje">Hoje</button>
-    <button class="item" data-tab="v-cal">Calendário</button>
+    <button class="item on" data-tab="v-cal">Calendário</button>
+    <button class="item" data-tab="v-hoje">Hoje</button>
     <button class="item" data-tab="v-prazos">Prazos</button>
     <button class="item" data-tab="v-fact">Faturação</button>
+    <button class="item so-calendario" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
   </nav>
+</div>
+
+<!-- Diálogo: categoria -->
+<dialog id="d-cat">
+  <form id="f-cat" method="dialog">
+    <h3 id="d-cat-titulo">Nova categoria</h3>
+    <div class="dlg-body">
+      <input type="hidden" id="c-id">
+      <label for="c-nome">Nome</label>
+      <input id="c-nome" required maxlength="40" placeholder="ex.: Audiência">
+      <label>Cor</label>
+      <div class="cores" id="c-cores" role="group" aria-label="Cor"></div>
+    </div>
+    <div class="dlg-body" style="padding-top:0">
+      <button class="btn primary" type="submit">Guardar</button>
+      <button type="button" class="btn danger" id="c-apagar" hidden>Apagar</button>
+      <button type="button" class="btn" data-close>Cancelar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Janela do dia -->
+<div class="dpop" id="dpop" role="dialog" aria-modal="true" aria-label="Registos do dia">
+  <div class="fundo" data-fechar-dpop></div>
+  <div class="painel">
+    <div class="dpop-top">
+      <h3 id="dpop-tit"></h3>
+      <button type="button" class="x" data-fechar-dpop aria-label="Fechar">&times;</button>
+    </div>
+    <div class="dpop-body" id="dpop-lista"></div>
+    <div class="dpop-novo">
+      <button type="button" class="btn" data-dpop-reuniao>+ Reunião</button>
+      <button type="button" class="btn" data-dpop-prazo>+ Prazo</button>
+    </div>
+  </div>
 </div>
 
 <!-- Diálogo: reunião -->
@@ -285,8 +376,21 @@
       <input id="r-telefone" type="tel" inputmode="tel" maxlength="20" placeholder="ex.: 912 345 678">
       <label for="r-email">E-mail</label>
       <input id="r-email" type="email" maxlength="120" placeholder="ex.: cliente@email.pt">
+      <div class="so-calendario"><label for="r-cat">Categoria</label>
+      <select id="r-cat"></select></div>
       <label for="r-inicio">Data e hora</label>
       <input id="r-inicio" type="datetime-local" required>
+      <div class="so-calendario"><label for="r-fim">Fim</label>
+      <input id="r-fim" type="datetime-local">
+      <label class="check"><input type="checkbox" id="r-diatodo"> Dia todo</label>
+      <label for="r-local">Local</label>
+      <input id="r-local" maxlength="200" placeholder="Escritório, tribunal ou videochamada">
+      <label for="r-repetir">Repetir</label>
+      <select id="r-repetir">
+        <option value="nunca">Nunca</option><option value="semanal">Todas as semanas</option>
+        <option value="quinzenal">De 15 em 15 dias</option><option value="mensal">Todos os meses</option>
+        <option value="anual">Todos os anos</option>
+      </select></div>
       <label for="r-honorarios">Honorários (€)</label>
       <input id="r-honorarios" type="number" min="0" step="0.01" inputmode="decimal" value="0">
       <label for="r-topicos">Tópicos da reunião</label>
@@ -331,8 +435,20 @@
       <input id="p-descricao" required maxlength="200">
       <label for="p-cliente">Cliente (opcional)</label>
       <input id="p-cliente" maxlength="120">
+      <div class="so-calendario"><label for="p-cat">Categoria</label>
+      <select id="p-cat"></select></div>
       <label for="p-data">Data limite</label>
       <input id="p-data" type="date" required>
+      <div class="so-calendario"><label for="p-hora">Hora (opcional)</label>
+      <input id="p-hora" type="time">
+      <label for="p-local">Local</label>
+      <input id="p-local" maxlength="200" placeholder="Tribunal, conservatória...">
+      <label for="p-repetir">Repetir</label>
+      <select id="p-repetir">
+        <option value="nunca">Nunca</option><option value="semanal">Todas as semanas</option>
+        <option value="quinzenal">De 15 em 15 dias</option><option value="mensal">Todos os meses</option>
+        <option value="anual">Todos os anos</option>
+      </select></div>
       <fieldset class="avisos-box">
         <legend>Avisar-me</legend>
         <div class="avisos-grid">

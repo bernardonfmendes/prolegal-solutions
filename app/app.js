@@ -17,6 +17,11 @@
   let user = null;
   let reunioes = [];
   let prazos = [];
+  let categorias = [];
+  let esquemaNovo = false; // fica true quando a migração do calendário já correu
+  const CORES = ['#1f3160', '#b42318', '#b54708', '#067647', '#6941c6', '#b8924a', '#0e7090', '#be185d'];
+  const CAT_REUNIAO = { nome: 'Reunião', cor: '#1f3160' };
+  const CAT_PRAZO = { nome: 'Prazo', cor: '#b54708' };
   let mesCal = startOfMonth(new Date());
   let diaSel = startOfDay(new Date());
 
@@ -82,9 +87,10 @@
 
   // ---------- dados ----------
   async function loadAll() {
-    const [r, p] = await Promise.all([
+    const [r, p, c] = await Promise.all([
       sb.from('reunioes').select('*').order('inicio', { ascending: true }),
-      sb.from('prazos').select('*').order('data_limite', { ascending: true })
+      sb.from('prazos').select('*').order('data_limite', { ascending: true }),
+      sb.from('categorias').select('*').order('ordem', { ascending: true })
     ]);
     if (r.error || p.error) {
       toast('Não foi possível carregar os dados. Verifique a ligação.');
@@ -92,6 +98,11 @@
     }
     reunioes = r.data || [];
     prazos = p.data || [];
+    // Se a migração do calendário ainda não tiver corrido, a app funciona na mesma,
+    // sem categorias e sem os campos novos, em vez de dar erro ao guardar.
+    esquemaNovo = !!(c && !c.error);
+    categorias = esquemaNovo ? (c.data || []) : [];
+    document.body.classList.toggle('sem-calendario', !esquemaNovo);
     renderAll();
   }
 
@@ -101,6 +112,7 @@
     atualizarBadge();
     renderCal();
     renderPrazos();
+    renderCats();
     renderFact();
   }
 
@@ -110,13 +122,15 @@
     const pendente = m.estado === 'agendada' && futura && !m.confirmada;
     const enviada = m.confirmacao_enviada_em
       ? `<span class="muted">Confirmação enviada em ${fmtDataHora(m.confirmacao_enviada_em)}</span>` : '';
+    const cat = catDe(m, 'reuniao');
     return `
-      <article class="card">
+      <article class="card cat-borda" style="--cat:${esc(cat.cor)}">
         <div class="row">
           <strong>${esc(m.cliente)}</strong>
           <div class="card-chips">${avisoReuniaoAtivo(m) ? '<span class="chip urgente">Aviso</span>' : ''}${m.confirmada ? '<span class="chip ok">Confirmada</span>' : ''}<span class="chip ${esc(m.estado)}">${LABEL[m.estado] || esc(m.estado)}</span></div>
         </div>
-        <div class="muted">${fmtDataHora(m.inicio)} · ${fmtEur(m.honorarios)}</div>
+        <div class="muted">${fmtDataHora(m.inicio)}${m.fim && !m.dia_todo ? ' – ' + new Date(m.fim).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''} · ${fmtEur(m.honorarios)}</div>
+        <div class="cat-nome" style="--cat:${esc(cat.cor)}">${esc(cat.nome)}${m.local ? ' · ' + esc(m.local) : ''}</div>
         ${m.topicos ? `<p>${esc(m.topicos)}</p>` : ''}
         ${enviada ? `<div style="margin-top:6px">${enviada}</div>` : ''}
         <div class="actions">
@@ -197,6 +211,28 @@
       : '<p class="empty">Sem prazos a vencer nos próximos 7 dias.</p>';
   }
 
+  // ---------- categorias ----------
+  function catDe(item, tipo) {
+    const c = categorias.find((k) => k.id === item.categoria_id);
+    return c || (tipo === 'prazo' ? CAT_PRAZO : CAT_REUNIAO);
+  }
+  function rgba(hex, a) {
+    const h = String(hex || '#1f3160').replace('#', '');
+    const n = parseInt(h.length === 3 ? h.split('').map((x) => x + x).join('') : h, 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+  }
+  // Tudo o que acontece num dia, reuniões e prazos juntos, por ordem de hora
+  function itensDoDia(key) {
+    const out = [];
+    reunioes.forEach((m) => {
+      if (dayKey(new Date(m.inicio)) === key) out.push({ tipo: 'reuniao', dados: m, hora: m.dia_todo ? null : new Date(m.inicio) });
+    });
+    prazos.forEach((p) => {
+      if (p.data_limite === key) out.push({ tipo: 'prazo', dados: p, hora: null });
+    });
+    return out.sort((a, b) => (a.hora ? a.hora.getHours() * 60 + a.hora.getMinutes() : -1) - (b.hora ? b.hora.getHours() * 60 + b.hora.getMinutes() : -1));
+  }
+
   // ---------- calendário ----------
   function renderCal() {
     const first = new Date(mesCal.getFullYear(), mesCal.getMonth(), 1);
@@ -211,23 +247,47 @@
       const d = new Date(start);
       d.setDate(start.getDate() + i);
       const key = dayKey(d);
-      const count = reunioes.filter((m) => dayKey(new Date(m.inicio)) === key).length;
+      const itens = itensDoDia(key);
       const cls = ['cal-day'];
       if (d.getMonth() !== mesCal.getMonth()) cls.push('out');
       if (key === hoje) cls.push('today');
       if (key === sel) cls.push('sel');
-      cells += `<button class="${cls.join(' ')}" data-day="${key}" aria-label="${key}">
-        <span>${d.getDate()}</span>${count ? `<i>${count}</i>` : ''}</button>`;
+
+      const chips = itens.slice(0, 2).map((it) => {
+        const c = catDe(it.dados, it.tipo);
+        const prazo = it.tipo === 'prazo';
+        const texto = prazo ? it.dados.descricao : it.dados.cliente;
+        const feito = prazo && it.dados.concluido ? ' feito' : '';
+        return `<span class="chip-ev${prazo ? ' lembrete' : ''}${feito}" style="--c-bg:${rgba(c.cor, 0.16)};--c-fg:${esc(c.cor)}">${esc(texto || 'Sem título')}</span>`;
+      }).join('');
+      const mais = itens.length > 2 ? `<span class="cal-mais">+${itens.length - 2}</span>` : '';
+
+      const n = itens.length;
+      const rotulo = `${d.getDate()} de ${d.toLocaleDateString('pt-PT', { month: 'long' })}${n ? `, ${n} ${n > 1 ? 'registos' : 'registo'}` : ', nada marcado'}`;
+      cells += `<button class="${cls.join(' ')}" data-day="${key}" aria-label="${esc(rotulo)}"><span class="n">${d.getDate()}</span>${chips}${mais}</button>`;
     }
     $('#cal-grid').innerHTML = cells;
     $('#cal-titulo').textContent = mesCal.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
-
-    const lista = reunioes.filter((m) => dayKey(new Date(m.inicio)) === sel);
-    $('#cal-dia').innerHTML = `
-      <h3 style="margin:14px 0 10px;text-transform:capitalize">${diaSel.toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
-      ${lista.length ? lista.map(cardReuniao).join('') : '<p class="empty">Sem reuniões neste dia.</p>'}
-      <button class="btn primary" data-novo-dia>+ Nova reunião neste dia</button>`;
+    if ($('#dpop').hasAttribute('open')) renderDPop();
   }
+
+  // ---------- janela do dia ----------
+  function renderDPop() {
+    const key = dayKey(diaSel);
+    const itens = itensDoDia(key);
+    $('#dpop-tit').innerHTML = `${esc(diaSel.toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' }))}<span class="sub">${itens.length ? itens.length + (itens.length > 1 ? ' registos' : ' registo') : 'Nada marcado'}</span>`;
+    $('#dpop-lista').innerHTML = itens.length
+      ? itens.map((it) => (it.tipo === 'prazo' ? prazoHtml(it.dados) : cardReuniao(it.dados))).join('')
+      : '<p class="empty">Nada marcado neste dia.</p>';
+  }
+  function abrirDPop(key) {
+    const [y, mo, d] = key.split('-').map(Number);
+    diaSel = new Date(y, mo - 1, d);
+    renderCal();
+    renderDPop();
+    $('#dpop').setAttribute('open', '');
+  }
+  function fecharDPop() { $('#dpop').removeAttribute('open'); }
 
   // ---------- prazos ----------
   function renderPrazos() {
@@ -273,6 +333,47 @@
     $('#fact-lista').innerHTML = lista.length
       ? lista.map((r) => `<div class="line"><span>${fmtDia(r.inicio)} · ${esc(r.cliente)} <span class="muted">(${LABEL[r.estado]})</span></span><b>${fmtEur(r.honorarios)}</b></div>`).join('')
       : '<p class="empty">Sem reuniões neste mês.</p>';
+  }
+
+  // ---------- categorias ----------
+  function renderCats() {
+    const el = $('#cats-lista');
+    if (!el) return;
+    if (!categorias.length) {
+      el.innerHTML = '<p class="empty">Ainda não há categorias. Crie a primeira para dar cores ao calendário.</p>';
+      return;
+    }
+    el.innerHTML = categorias.map((c) => `
+      <div class="cat-linha">
+        <span class="cat-dot" style="background:${esc(c.cor)}"></span>
+        <span class="nome">${esc(c.nome)}</span>
+        <button type="button" class="btn small" data-edit-cat="${esc(c.id)}">Editar</button>
+      </div>`).join('');
+  }
+
+  function openCat(id) {
+    const f = $('#f-cat');
+    f.reset();
+    const atual = id ? categorias.find((c) => c.id === id) : null;
+    const cor = atual ? atual.cor : CORES[categorias.length % CORES.length];
+    $('#c-cores').innerHTML = CORES.map((x) => `
+      <button type="button" data-cor="${x}" style="background:${x}" aria-pressed="${x === cor}" aria-label="Cor ${x}"></button>`).join('');
+    if (atual) {
+      $('#c-id').value = atual.id;
+      $('#c-nome').value = atual.nome;
+      $('#d-cat-titulo').textContent = 'Editar categoria';
+      $('#c-apagar').hidden = false;
+    } else {
+      $('#c-id').value = '';
+      $('#d-cat-titulo').textContent = 'Nova categoria';
+      $('#c-apagar').hidden = true;
+    }
+    $('#d-cat').showModal();
+  }
+
+  function corEscolhida() {
+    const b = $('#c-cores button[aria-pressed="true"]');
+    return b ? b.dataset.cor : CORES[0];
   }
 
   // ---------- confirmação com 1 toque ----------
@@ -346,6 +447,11 @@
       $('#r-telefone').value = m.telefone || '';
       $('#r-email').value = m.email || '';
       $('#r-inicio').value = toLocalInput(m.inicio);
+      $('#r-fim').value = m.fim ? toLocalInput(m.fim) : '';
+      $('#r-diatodo').checked = !!m.dia_todo;
+      $('#r-local').value = m.local || '';
+      $('#r-repetir').value = m.repetir || 'nunca';
+      encherCats('#r-cat', m.categoria_id, 'Reunião');
       $('#r-honorarios').value = m.honorarios ?? 0;
       $('#r-topicos').value = m.topicos || '';
       $('#r-estado').value = m.estado;
@@ -361,16 +467,33 @@
       if (dia) base.setHours(10, 0, 0, 0);
       else { base.setSeconds(0, 0); base.setHours(base.getHours() + 1, 0, 0, 0); }
       $('#r-inicio').value = toLocalInput(base);
+      const fim = new Date(base); fim.setHours(fim.getHours() + 1);
+      $('#r-fim').value = toLocalInput(fim);
+      $('#r-diatodo').checked = false;
+      $('#r-local').value = '';
+      $('#r-repetir').value = 'nunca';
+      encherCats('#r-cat', null, 'Reunião');
       setAvisosR([1440, 120]);
     }
     $('#d-reuniao').showModal();
+  }
+
+  function encherCats(sel, escolhida, omissao) {
+    const el = $(sel);
+    const lista = categorias.length ? categorias : [{ id: '', nome: omissao }];
+    el.innerHTML = lista.map((c) => `<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('');
+    if (escolhida) el.value = escolhida;
+    else if (categorias.length) {
+      const pref = categorias.find((c) => c.nome === omissao);
+      el.value = pref ? pref.id : categorias[0].id;
+    }
   }
 
   function setAvisos(lista) {
     document.querySelectorAll('input[name=aviso]').forEach((i) => { i.checked = lista.includes(Number(i.value)); });
   }
 
-  function openPrazo(id) {
+  function openPrazo(id, dia) {
     $('#f-prazo').reset();
     if (id) {
       const p = prazos.find((x) => x.id === id);
@@ -379,12 +502,20 @@
       $('#p-descricao').value = p.descricao;
       $('#p-cliente').value = p.cliente || '';
       $('#p-data').value = p.data_limite;
+      $('#p-hora').value = p.hora ? String(p.hora).slice(0, 5) : '';
+      $('#p-local').value = p.local || '';
+      $('#p-repetir').value = p.repetir || 'nunca';
+      encherCats('#p-cat', p.categoria_id, 'Prazo');
       setAvisos(p.avisos || [3, 1, 0]);
       $('#d-prazo-titulo').textContent = 'Editar prazo';
       $('#p-apagar').hidden = false;
     } else {
       $('#p-id').value = '';
-      $('#p-data').value = dayKey(new Date());
+      $('#p-data').value = dayKey(dia || new Date());
+      $('#p-hora').value = '';
+      $('#p-local').value = '';
+      $('#p-repetir').value = 'nunca';
+      encherCats('#p-cat', null, 'Prazo');
       setAvisos([3, 1, 0]);
       $('#d-prazo-titulo').textContent = 'Novo prazo';
       $('#p-apagar').hidden = true;
@@ -442,6 +573,8 @@
   }
 
   // ---------- eventos ----------
+  let tapTimer = null;
+  let tapDia = null;
   document.addEventListener('click', async (e) => {
     const el = e.target.closest('button, [data-day]');
     if (!el) return;
@@ -458,10 +591,26 @@
       return renderCal();
     }
     if (el.dataset.day) {
-      const [y, mo, d] = el.dataset.day.split('-').map(Number);
-      diaSel = new Date(y, mo - 1, d);
-      return renderCal();
+      // Um toque abre o dia. Dois toques marcam já nesse dia.
+      const key = el.dataset.day;
+      if (tapTimer && tapDia === key) {
+        clearTimeout(tapTimer); tapTimer = null; tapDia = null;
+        const [y, mo, d] = key.split('-').map(Number);
+        diaSel = new Date(y, mo - 1, d);
+        fecharDPop();
+        renderCal();
+        return openReuniao(null, diaSel);
+      }
+      clearTimeout(tapTimer);
+      tapDia = key;
+      tapTimer = setTimeout(() => { tapTimer = null; tapDia = null; abrirDPop(key); }, 260);
+      return;
     }
+    if ('fecharDpop' in el.dataset) return fecharDPop();
+    if ('dpopReuniao' in el.dataset) { fecharDPop(); return openReuniao(null, diaSel); }
+    if ('dpopPrazo' in el.dataset) { fecharDPop(); return openPrazo(null, diaSel); }
+    if ('novaCat' in el.dataset) return openCat(null);
+    if (el.dataset.editCat) return openCat(el.dataset.editCat);
     if ('novaReuniao' in el.dataset) return openReuniao(null, null);
     if ('novoDia' in el.dataset) return openReuniao(null, diaSel);
     if (el.dataset.edit) return openReuniao(el.dataset.edit);
@@ -472,6 +621,16 @@
     if (el.dataset.editPrazo) return openPrazo(el.dataset.editPrazo);
     if ('close' in el.dataset) return el.closest('dialog').close();
     if ('logout' in el.dataset) { await sb.auth.signOut(); return; }
+  });
+
+  document.getElementById('c-cores').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-cor]');
+    if (!b) return;
+    $$('#c-cores button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  });
+
+  document.getElementById('dpop').addEventListener('click', (e) => {
+    if (e.target.classList.contains('fundo')) fecharDPop();
   });
 
   document.addEventListener('change', (e) => {
@@ -505,6 +664,13 @@
       confirmada: $('#r-confirmada').checked,
       avisos_min: Array.from(document.querySelectorAll('input[name=avisoR]:checked')).map((i) => Number(i.value))
     };
+    if (esquemaNovo) {
+      payload.fim = $('#r-fim').value ? new Date($('#r-fim').value).toISOString() : null;
+      payload.dia_todo = $('#r-diatodo').checked;
+      payload.local = $('#r-local').value.trim() || null;
+      payload.repetir = $('#r-repetir').value;
+      payload.categoria_id = $('#r-cat').value || null;
+    }
     if (id) {
       const orig = reunioes.find((x) => x.id === id);
       // Se a data mudou (remarcação), a confirmação anterior deixa de valer
@@ -541,12 +707,46 @@
       data_limite: $('#p-data').value,
       avisos: Array.from(document.querySelectorAll('input[name=aviso]:checked')).map((i) => Number(i.value))
     };
+    if (esquemaNovo) {
+      payload.hora = $('#p-hora').value || null;
+      payload.local = $('#p-local').value.trim() || null;
+      payload.repetir = $('#p-repetir').value;
+      payload.categoria_id = $('#p-cat').value || null;
+    }
     const res = id
       ? await sb.from('prazos').update(payload).eq('id', id)
       : await sb.from('prazos').insert({ ...payload, user_id: user.id });
     if (res.error) { toast('Erro: ' + res.error.message); return; }
     $('#d-prazo').close();
     toast('Prazo guardado');
+    await loadAll();
+  });
+
+  $('#f-cat').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = $('#c-id').value;
+    const payload = { nome: $('#c-nome').value.trim(), cor: corEscolhida() };
+    if (!payload.nome) { toast('Indique o nome.'); return; }
+    const res = id
+      ? await sb.from('categorias').update(payload).eq('id', id)
+      : await sb.from('categorias').insert({ ...payload, user_id: user.id, ordem: categorias.length + 1 });
+    if (res.error) { toast('Erro: ' + res.error.message); return; }
+    $('#d-cat').close();
+    toast('Categoria guardada');
+    await loadAll();
+  });
+
+  $('#c-apagar').addEventListener('click', async () => {
+    const id = $('#c-id').value;
+    const usada = reunioes.filter((m) => m.categoria_id === id).length + prazos.filter((p) => p.categoria_id === id).length;
+    const aviso = usada
+      ? `Apagar esta categoria? ${usada} ${usada > 1 ? 'registos ficam' : 'registo fica'} sem categoria, mas nada é apagado.`
+      : 'Apagar esta categoria?';
+    if (!confirm(aviso)) return;
+    const { error } = await sb.from('categorias').delete().eq('id', id);
+    if (error) { toast('Erro: ' + error.message); return; }
+    $('#d-cat').close();
+    toast('Categoria apagada');
     await loadAll();
   });
 
