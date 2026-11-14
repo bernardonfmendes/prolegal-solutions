@@ -130,6 +130,11 @@
   /* Enquanto a migração do calendário não correr, estes campos não têm onde ser guardados */
   body.sem-calendario .so-calendario{display:none}
   #d-reuniao.pessoal .so-trabalho{display:none}
+  /* Convidado: só calendário pessoal; do trabalho da dona vê apenas "Ocupado" */
+  body.modo-convidado .so-dona{display:none !important}
+  .chip-ev.ocupado{background:repeating-linear-gradient(135deg,rgba(120,130,150,.18) 0 4px,rgba(120,130,150,.08) 4px 8px);color:var(--muted)}
+  .card.ocupado{border-style:dashed;box-shadow:none;background:transparent}
+  .card.ocupado strong{color:var(--muted)}
   .cat-nome{color:var(--cat);font-weight:600}
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .cat-nome{color:color-mix(in srgb, var(--cat) 42%, white)} }
   :root[data-theme="dark"] .cat-nome{color:color-mix(in srgb, var(--cat) 42%, white)}
@@ -331,12 +336,12 @@
       <button type="button" class="x" data-close-menu aria-label="Fechar menu">×</button>
     </div>
     <button class="item on" data-tab="v-cal">Calendário</button>
-    <button class="item" data-tab="v-hoje">Hoje</button>
-    <button class="item" data-tab="v-prazos">Prazos</button>
-    <button class="item" data-tab="v-fact">Faturação</button>
-    <button class="item so-calendario" data-tab="v-cats">Categorias</button>
+    <button class="item so-dona" data-tab="v-hoje">Hoje</button>
+    <button class="item so-dona" data-tab="v-prazos">Prazos</button>
+    <button class="item so-dona" data-tab="v-fact">Faturação</button>
+    <button class="item so-calendario so-dona" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
-    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 8</p>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 9</p>
   </nav>
 </div>
 
@@ -374,8 +379,8 @@
     </div>
     <div class="dpop-body" id="dpop-lista"></div>
     <div class="dpop-novo">
-      <button type="button" class="btn" data-dpop-reuniao>+ Reunião</button>
-      <button type="button" class="btn" data-dpop-prazo>+ Prazo</button>
+      <button type="button" class="btn so-dona" data-dpop-reuniao>+ Reunião</button>
+      <button type="button" class="btn so-dona" data-dpop-prazo>+ Prazo</button>
       <button type="button" class="btn so-pessoal" data-dpop-pessoal>+ Pessoal</button>
     </div>
   </div>
@@ -493,6 +498,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

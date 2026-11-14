@@ -19,6 +19,10 @@
   let prazos = [];
   let categorias = [];
   let esquemaNovo = false; // fica true quando a migração do calendário já correu
+  // Convidado: partilha só o calendário pessoal; do trabalho da dona vê apenas "Ocupado".
+  // As regras a sério estão na base de dados (supabase-convidados.sql); aqui só se adapta o ecrã.
+  let modoConvidado = false;
+  let ocupados = [];
   const CORES = ['#1f3160', '#b42318', '#b54708', '#067647', '#6941c6', '#b8924a', '#0e7090', '#be185d'];
   const CAT_REUNIAO = { nome: 'Reunião', cor: '#1f3160' };
   const CAT_PRAZO = { nome: 'Prazo', cor: '#b54708' };
@@ -87,11 +91,20 @@
 
   // ---------- dados ----------
   async function loadAll() {
-    const [r, p, c] = await Promise.all([
+    const [r, p, c, conv] = await Promise.all([
       sb.from('reunioes').select('*').order('inicio', { ascending: true }),
       sb.from('prazos').select('*').order('data_limite', { ascending: true }),
-      sb.from('categorias').select('*').order('ordem', { ascending: true })
+      sb.from('categorias').select('*').order('ordem', { ascending: true }),
+      // Se a migração dos convidados ainda não correu, dá erro e a app segue como antes
+      sb.from('convidados').select('dono').eq('convidado', user.id)
     ]);
+    modoConvidado = !!(conv && !conv.error && conv.data && conv.data.length);
+    ocupados = [];
+    if (modoConvidado) {
+      const o = await sb.rpc('ocupado');
+      ocupados = (o && !o.error && o.data) || [];
+    }
+    document.body.classList.toggle('modo-convidado', modoConvidado);
     if (r.error || p.error) {
       toast('Não foi possível carregar os dados. Verifique a ligação.');
       return;
@@ -104,6 +117,7 @@
     categorias = esquemaNovo ? (c.data || []) : [];
     document.body.classList.toggle('sem-calendario', !esquemaNovo);
     document.body.classList.toggle('tem-pessoal', categorias.some((c) => c.pessoal));
+    if (modoConvidado && !$('#v-cal').classList.contains('active')) showTab('v-cal');
     renderAll();
   }
 
@@ -120,7 +134,8 @@
   // ---------- cartões ----------
   function cardReuniao(m) {
     const futura = new Date(m.inicio).getTime() > Date.now();
-    const pendente = m.estado === 'agendada' && futura && !m.confirmada;
+    const pessoal = ehPessoal(m.categoria_id);
+    const pendente = !pessoal && m.estado === 'agendada' && futura && !m.confirmada;
     const enviada = m.confirmacao_enviada_em
       ? `<span class="muted">Confirmação enviada em ${fmtDataHora(m.confirmacao_enviada_em)}</span>` : '';
     const cat = catDe(m, 'reuniao');
@@ -137,7 +152,7 @@
         <div class="actions">
           ${pendente ? botoesConfirmar(m) : ''}
           ${pendente ? `<button class="btn small" data-confirmada="${m.id}">Confirmou</button>` : ''}
-          ${m.estado === 'agendada' && !futura ? `<button class="btn small" data-realizar="${m.id}">Marcar realizada</button>` : ''}
+          ${!pessoal && m.estado === 'agendada' && !futura ? `<button class="btn small" data-realizar="${m.id}">Marcar realizada</button>` : ''}
           <button class="btn small" data-edit="${m.id}">Editar</button>
         </div>
       </article>`;
@@ -250,7 +265,17 @@
     prazos.forEach((p) => {
       if (p.data_limite === key) out.push({ tipo: 'prazo', dados: p, hora: null });
     });
+    ocupados.forEach((o) => {
+      if (dayKey(new Date(o.inicio)) === key) out.push({ tipo: 'ocupado', dados: o, hora: o.dia_todo ? null : new Date(o.inicio) });
+    });
     return out.sort((a, b) => (a.hora ? a.hora.getHours() * 60 + a.hora.getMinutes() : -1) - (b.hora ? b.hora.getHours() * 60 + b.hora.getMinutes() : -1));
+  }
+
+  // Trabalho da dona, visto pelo convidado: só a hora. Sem cliente, local nem assunto.
+  function cardOcupado(o) {
+    const h = (iso) => new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+    const quando = o.dia_todo ? 'Todo o dia' : h(o.inicio) + (o.fim ? ' – ' + h(o.fim) : '');
+    return `<article class="card ocupado"><div class="row"><strong>Ocupado</strong></div><div class="muted">${esc(quando)}</div></article>`;
   }
 
   // ---------- calendário ----------
@@ -274,6 +299,7 @@
       if (key === sel) cls.push('sel');
 
       const chips = itens.slice(0, 2).map((it) => {
+        if (it.tipo === 'ocupado') return '<span class="chip-ev ocupado" style="--c-bg:transparent;--c-fg:#7b8499">Ocupado</span>';
         const c = catDe(it.dados, it.tipo);
         const prazo = it.tipo === 'prazo';
         const texto = prazo ? it.dados.descricao : it.dados.cliente;
@@ -297,7 +323,7 @@
     const itens = itensDoDia(key);
     $('#dpop-tit').innerHTML = `${esc(diaSel.toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' }))}<span class="sub">${itens.length ? itens.length + (itens.length > 1 ? ' registos' : ' registo') : 'Nada marcado'}</span>`;
     $('#dpop-lista').innerHTML = itens.length
-      ? itens.map((it) => (it.tipo === 'prazo' ? prazoHtml(it.dados) : cardReuniao(it.dados))).join('')
+      ? itens.map((it) => (it.tipo === 'prazo' ? prazoHtml(it.dados) : it.tipo === 'ocupado' ? cardOcupado(it.dados) : cardReuniao(it.dados))).join('')
       : '<p class="empty">Nada marcado neste dia.</p>';
   }
   function abrirDPop(key) {
@@ -714,7 +740,7 @@
         diaSel = new Date(y, mo - 1, d);
         fecharDPop();
         renderCal();
-        return openReuniao(null, diaSel);
+        return openReuniao(null, diaSel, modoConvidado);
       }
       clearTimeout(tapTimer);
       tapDia = key;
@@ -740,6 +766,8 @@
       // Antes de sair: este telemóvel deixa de receber os alertas desta conta.
       await esquecerTelemovel();
       alertasOk = false;
+      modoConvidado = false; ocupados = [];
+      document.body.classList.remove('modo-convidado');
       await sb.auth.signOut();
       return;
     }
