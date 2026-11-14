@@ -5,6 +5,7 @@
 --     contactos, local nem assunto (sigilo profissional);
 --   * não vê prazos, faturação nem categorias de trabalho, e não cria nada de trabalho.
 -- As regras estão na base de dados (RLS), não só no ecrã: a chave da app é pública.
+-- Todas as regras são só para quem tem sessão iniciada (to authenticated): sem sessão não se vê nada.
 -- Pode ser corrido mais do que uma vez.
 
 create table if not exists public.convidados (
@@ -61,7 +62,7 @@ grant execute on function public.e_convidado(), public.agregado(), public.cat_pe
 -- A dona continua com acesso total ao que é dela. Um convidado não usa esta regra.
 drop policy if exists "reunioes: proprias" on public.reunioes;
 create policy "reunioes: proprias" on public.reunioes
-  for all using (auth.uid() = user_id and not public.e_convidado())
+  for all to authenticated using (auth.uid() = user_id and not public.e_convidado())
   with check (auth.uid() = user_id and not public.e_convidado());
 
 -- Registos pessoais: partilhados dentro do agregado, e nunca podem passar a trabalho.
@@ -89,13 +90,13 @@ create policy "reunioes: pessoais partilhadas - apagar" on public.reunioes
 -- ---------- prazos: um convidado não vê nem cria ----------
 drop policy if exists "prazos: proprios" on public.prazos;
 create policy "prazos: proprios" on public.prazos
-  for all using (auth.uid() = user_id and not public.e_convidado())
+  for all to authenticated using (auth.uid() = user_id and not public.e_convidado())
   with check (auth.uid() = user_id and not public.e_convidado());
 
 -- ---------- categorias: o convidado vê só as pessoais da dona, sem as alterar ----------
 drop policy if exists "categorias: proprias" on public.categorias;
 create policy "categorias: proprias" on public.categorias
-  for all using (auth.uid() = user_id and not public.e_convidado())
+  for all to authenticated using (auth.uid() = user_id and not public.e_convidado())
   with check (auth.uid() = user_id and not public.e_convidado());
 
 drop policy if exists "categorias: pessoais da dona" on public.categorias;
