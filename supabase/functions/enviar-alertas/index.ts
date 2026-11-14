@@ -17,6 +17,7 @@ function lerVapid() {
 const ASSUNTO = Deno.env.get('VAPID_SUBJECT') || 'mailto:geral@prolegalsolutions.pt';
 const ZONA = 'Europe/Lisbon';
 const HORA_PRAZO = 8; // os avisos de prazos saem de manhã
+const FOLGA_MS = 15 * 60000; // cobre o intervalo do cron e uma execução falhada
 
 async function sb(caminho: string, init: RequestInit = {}) {
   const r = await fetch(`${URL_SB}/rest/v1/${caminho}`, {
@@ -76,8 +77,12 @@ Deno.serve(async () => {
   try {
     lerVapid();   // falha já aqui, com motivo, se o segredo não estiver posto
     const limite = new Date(agora.getTime() + 8 * 86400000).toISOString();
+    // O cron corre de 5 em 5 minutos. Um aviso "na hora" (ou a poucos minutos do início) cai
+    // entre duas execuções, e a seguinte já encontra a reunião começada. Por isso também se
+    // olha para reuniões que começaram há pouco (FOLGA), para esse aviso não se perder.
+    const desde = new Date(agora.getTime() - FOLGA_MS).toISOString();
     const [reunioes, prazos, subs] = await Promise.all([
-      sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local&estado=eq.agendada&inicio=gte.${agora.toISOString()}&inicio=lte.${limite}`),
+      sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local&estado=eq.agendada&inicio=gte.${desde}&inicio=lte.${limite}`),
       sb(`prazos?select=id,user_id,descricao,data_limite,avisos,concluido&concluido=is.false`),
       sb(`push_subs?select=id,user_id,endpoint,p256dh,auth`)
     ]);
@@ -90,11 +95,14 @@ Deno.serve(async () => {
 
     for (const m of reunioes) {
       const t = new Date(m.inicio).getTime();
+      // Quanto falta de facto: um aviso que saia atrasado (ou de uma reunião criada em cima
+      // da hora) diz a verdade, em vez de repetir o intervalo configurado.
+      const falta = Math.max(0, Math.round((t - agora.getTime()) / 60000));
       for (const min of (m.avisos_min || [])) {
-        if (agora.getTime() >= t - min * 60000) {
+        if (agora.getTime() >= t - min * 60000 && agora.getTime() <= t + FOLGA_MS) {
           pendentes.push({
             user_id: m.user_id, registo_id: m.id, tipo: 'reuniao', minutos: min,
-            titulo: `${m.cliente || 'Reunião'} ${quantoFalta(min)}`,
+            titulo: `${m.cliente || 'Reunião'} ${falta === 0 ? (t < agora.getTime() ? 'já começou' : 'agora') : quantoFalta(falta)}`,
             corpo: `${fmtHora(m.inicio)}${m.local ? ' · ' + m.local : ''}`,
             dia: diaDe(m.inicio)
           });
