@@ -82,6 +82,8 @@
       else { reunioes = []; prazos = []; }
       render();
     });
+    // Voltar à app (mesmo sem a fechar) também conta como ver as notificações
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && user) atualizarBadge(); });
     $('#fact-mes').value = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
   }
 
@@ -712,18 +714,16 @@
     if (!alertasOk) mostrar('Não foi possível ligar os alertas neste telemóvel.', true);
   }
 
-  function atualizarBadge() {
-    const agora = Date.now();
-    const confirmar = reunioes.filter((m) => {
-      const t = new Date(m.inicio).getTime();
-      return m.estado === 'agendada' && !m.confirmada && t > agora && t - agora <= 48 * HORA_MS;
-    }).length;
-    const prazosAbertos = prazos.filter(avisoPrazoHoje).length;
-    const total = reunioes.filter(avisoReuniaoAtivo).length + prazosAbertos;
-    if (!('setAppBadge' in navigator)) return;
-    if (total > 0) navigator.setAppBadge(total).catch(() => {});
-    else navigator.clearAppBadge().catch(() => {});
+  // O número no ícone mostra as notificações por ver (é o service worker que o põe quando
+  // chega um alerta). Abrir a app conta como vê-las: limpa as notificações e o número.
+  async function atualizarBadge() {
+    try {
+      const reg = 'serviceWorker' in navigator ? await comLimite(navigator.serviceWorker.ready, 2000) : null;
+      if (reg && reg.getNotifications) (await reg.getNotifications()).forEach((n) => n.close());
+    } catch (e) { /* sem service worker não há notificações a limpar */ }
+    if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
   }
+
 
   // ---------- eventos ----------
   let tapTimer = null;

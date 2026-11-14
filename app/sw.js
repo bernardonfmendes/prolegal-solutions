@@ -1,10 +1,10 @@
 // Prolegal Solutions: service worker. Guarda apenas a "casca" da app para abrir sem ligação.
 // Os dados (reuniões, prazos) vêm sempre do Supabase e nunca são guardados em cache.
-const CACHE = 'prolegal-app-v9';
+const CACHE = 'prolegal-app-v10';
 const SHELL = [
   './',
   'index.html',
-  'app.js?v=9',
+  'app.js?v=10',
   'config.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
@@ -43,6 +43,17 @@ self.addEventListener('fetch', (event) => {
 
 // ---------- Alertas (Web Push) ----------
 // A notificação chega mesmo com a app fechada. O conteúdo vem da função no Supabase.
+// O número no ícone = notificações da app ainda no centro de notificações.
+// Abrir a app conta como vê-las (a app limpa as notificações e o número).
+async function acertarBadge(minimo) {
+  try {
+    if (!('setAppBadge' in self.navigator)) return;
+    const n = Math.max((await self.registration.getNotifications()).length, minimo || 0);
+    if (n > 0) await self.navigator.setAppBadge(n);
+    else await self.navigator.clearAppBadge();
+  } catch (e) { /* o número no ícone nunca impede a notificação */ }
+}
+
 self.addEventListener('push', (event) => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { corpo: event.data ? event.data.text() : '' }; }
@@ -55,12 +66,13 @@ self.addEventListener('push', (event) => {
     renotify: !!d.tag,
     data: { dia: d.dia || null },
     requireInteraction: false
-  }));
+  }).then(() => acertarBadge(1)));
 });
 
 // Tocar na notificação abre a app, no dia do registo
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  acertarBadge();
   const dia = event.notification.data && event.notification.data.dia;
   const destino = dia ? ('index.html#dia=' + dia) : 'index.html';
   event.waitUntil(
