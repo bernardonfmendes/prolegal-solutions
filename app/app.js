@@ -23,6 +23,8 @@
   // As regras a sério estão na base de dados (supabase-convidados.sql); aqui só se adapta o ecrã.
   let modoConvidado = false;
   let ocupados = [];
+  // Os meus lembretes nos registos pessoais criados pelo outro (registo_id -> minutos)
+  let avisosMeus = new Map();
   const CORES = ['#1f3160', '#b42318', '#b54708', '#067647', '#6941c6', '#b8924a', '#0e7090', '#be185d'];
   const CAT_REUNIAO = { nome: 'Reunião', cor: '#1f3160' };
   const CAT_PRAZO = { nome: 'Prazo', cor: '#b54708' };
@@ -91,13 +93,15 @@
 
   // ---------- dados ----------
   async function loadAll() {
-    const [r, p, c, conv] = await Promise.all([
+    const [r, p, c, conv, av] = await Promise.all([
       sb.from('reunioes').select('*').order('inicio', { ascending: true }),
       sb.from('prazos').select('*').order('data_limite', { ascending: true }),
       sb.from('categorias').select('*').order('ordem', { ascending: true }),
       // Se a migração dos convidados ainda não correu, dá erro e a app segue como antes
-      sb.from('convidados').select('dono').eq('convidado', user.id)
+      sb.from('convidados').select('dono').eq('convidado', user.id),
+      sb.from('avisos_meus').select('registo_id,avisos_min')
     ]);
+    avisosMeus = new Map((av && !av.error && av.data ? av.data : []).map((a) => [a.registo_id, a.avisos_min || []]));
     modoConvidado = !!(conv && !conv.error && conv.data && conv.data.length);
     ocupados = [];
     if (modoConvidado) {
@@ -243,7 +247,7 @@
     $('#lbl-cliente').textContent = pessoal ? 'Título' : 'Nome do cliente';
     $('#r-cliente').placeholder = pessoal ? 'ex.: Almoço, médico, ginásio' : '';
     $('#lbl-topicos').textContent = pessoal ? 'Notas' : 'Tópicos da reunião';
-    $('#lbl-avisos').textContent = pessoal ? 'Avisar-me antes' : 'Avisar-me antes da reunião';
+    $('#lbl-avisos').textContent = pessoal ? 'Avisar-me (só para mim)' : 'Avisar-me antes da reunião';
     $('#r-local').placeholder = pessoal ? 'ex.: casa, clínica, ginásio' : 'Escritório, tribunal ou videochamada';
     // Um registo pessoal não tem estado nem confirmação de cliente
     if (pessoal) { $('#r-estado').value = 'agendada'; $('#r-confirmada').checked = false; }
@@ -505,7 +509,7 @@
       $('#r-topicos').value = m.topicos || '';
       $('#r-estado').value = m.estado;
       $('#r-confirmada').checked = !!m.confirmada;
-      setAvisosR(m.avisos_min || []);
+      setAvisosR(avisosDe(m));
       $('#d-reuniao-titulo').textContent = 'Editar reunião';
       $('#r-apagar').hidden = false;
     } else {
@@ -597,7 +601,12 @@
     if (m.estado !== 'agendada' || m.confirmada) return false;
     const t = new Date(m.inicio).getTime();
     const agora = Date.now();
-    return t > agora && (m.avisos_min || []).some((min) => agora >= t - min * 60000);
+    return t > agora && avisosDe(m).some((min) => agora >= t - min * 60000);
+  }
+  // Lembretes de quem está a usar a app: nos registos que criou, os do próprio registo;
+  // nos que o outro criou (pessoais partilhados), os seus, guardados à parte.
+  function avisosDe(m) {
+    return !user || m.user_id === user.id ? (m.avisos_min || []) : (avisosMeus.get(m.id) || []);
   }
 
   // ---------- alertas (número no ícone) ----------
@@ -830,10 +839,18 @@
         payload.confirmacao_enviada_em = null;
       }
     }
+    // Num registo criado pelo outro, os lembretes escolhidos são só meus: não mexem nos dele.
+    const doOutro = id && (reunioes.find((x) => x.id === id) || {}).user_id !== user.id;
+    const meus = payload.avisos_min;
+    if (doOutro) delete payload.avisos_min;
     const res = id
       ? await sb.from('reunioes').update(payload).eq('id', id)
       : await sb.from('reunioes').insert({ ...payload, user_id: user.id });
     if (res.error) { toast('Erro: ' + res.error.message); return; }
+    if (doOutro) {
+      const a = await sb.from('avisos_meus').upsert({ registo_id: id, user_id: user.id, avisos_min: meus }, { onConflict: 'registo_id,user_id' });
+      if (a.error) toast('Guardado, mas os seus lembretes não: ' + a.error.message);
+    }
     $('#d-reuniao').close();
     toast('Reunião guardada');
     await loadAll();
