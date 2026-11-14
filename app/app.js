@@ -510,7 +510,7 @@
       $('#r-estado').value = m.estado;
       $('#r-confirmada').checked = !!m.confirmada;
       setAvisosR(avisosDe(m));
-      $('#d-reuniao-titulo').textContent = 'Editar reunião';
+      $('#d-reuniao-titulo').textContent = ehPessoal(m.categoria_id) ? 'Editar registo pessoal' : 'Editar reunião';
       $('#r-apagar').hidden = false;
     } else {
       $('#r-id').value = '';
@@ -852,7 +852,7 @@
       if (a.error) toast('Guardado, mas os seus lembretes não: ' + a.error.message);
     }
     $('#d-reuniao').close();
-    toast('Reunião guardada');
+    toast(ehPessoal(payload.categoria_id) ? 'Guardado' : 'Reunião guardada');
     await loadAll();
   });
 
