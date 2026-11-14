@@ -594,81 +594,87 @@
   function comLimite(promessa, ms) {
     return Promise.race([promessa, new Promise((r) => setTimeout(() => r(null), ms))]);
   }
-  async function subscricaoAtual() {
-    if (!suportaPush()) return null;
-    try {
-      const reg = await comLimite(navigator.serviceWorker.ready, 3000);
-      return reg ? await reg.pushManager.getSubscription() : null;
-    } catch (e) { return null; }
+  function ehIOS() {
+    return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  async function guardarSub(sub) {
+    const j = sub.toJSON();
+    const { error } = await sb.from('push_subs').upsert(
+      { user_id: user.id, endpoint: sub.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, ultimo_erro: null },
+      { onConflict: 'endpoint' }
+    );
+    return !error;
+  }
+
+  // Os alertas estão sempre ligados: sempre que a app abre, confirma em silêncio que este
+  // telemóvel está registado (e regista-o outra vez se for preciso). A única coisa que não
+  // pode ser automática é a primeira autorização: a Apple exige um toque da pessoa.
+  let alertasOk = false;
+  let sincEmCurso = null;
+  function sincronizarAlertas() {
+    if (!user || !suportaPush() || Notification.permission !== 'granted') return Promise.resolve(false);
+    if (!sincEmCurso) {
+      sincEmCurso = (async () => {
+        try {
+          const reg = await comLimite(navigator.serviceWorker.ready, 8000);
+          if (!reg) return false;
+          const sub = (await reg.pushManager.getSubscription())
+            || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ParaBytes(VAPID) }));
+          return await guardarSub(sub);
+        } catch (e) { return false; }
+      })().finally(() => { sincEmCurso = null; });
+    }
+    return sincEmCurso;
   }
 
   async function ligarAlertas() {
-    if (!suportaPush()) { toast('Este telemóvel não suporta alertas.'); return; }
-    if (!isInstalada()) { toast('Adicione a app ao ecrã principal para receber alertas.'); return; }
+    const btn = $('#btn-alertas');
+    btn.disabled = true;
     try {
       const permissao = await Notification.requestPermission();
-      if (permissao !== 'granted') { toast('Sem autorização, não é possível enviar alertas.'); return renderAlertas(); }
-      const reg = await comLimite(navigator.serviceWorker.ready, 8000);
-      if (!reg) { toast('A app ainda está a preparar-se. Tente outra vez daqui a pouco.'); return; }
-      const sub = (await reg.pushManager.getSubscription())
-        || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ParaBytes(VAPID) }));
-      const j = sub.toJSON();
-      const { error } = await sb.from('push_subs').upsert(
-        { user_id: user.id, endpoint: sub.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, ultimo_erro: null },
-        { onConflict: 'endpoint' }
-      );
-      if (error) { toast('Erro a guardar: ' + error.message); return; }
-      toast('Alertas ligados neste telemóvel');
+      if (permissao === 'granted') {
+        alertasOk = await sincronizarAlertas();
+        toast(alertasOk ? 'Alertas ligados neste telemóvel' : 'Não foi possível ligar os alertas. Tente outra vez.');
+      }
     } catch (e) {
-      toast('Não foi possível ligar os alertas: ' + (e && e.message ? e.message : e));
+      toast('Não foi possível ligar os alertas.');
     }
-    renderAlertas();
-    atualizarBadge();
-  }
-
-  async function desligarAlertas() {
-    const sub = await subscricaoAtual();
-    if (sub) {
-      await sb.from('push_subs').delete().eq('endpoint', sub.endpoint);
-      await sub.unsubscribe().catch(() => {});
-    }
-    toast('Alertas desligados neste telemóvel');
+    btn.disabled = false;
     renderAlertas();
   }
 
+  // Ao sair, este telemóvel deixa de receber os alertas desta conta
+  // (se a app passar para outra pessoa, não lhe chegam nomes de clientes de outra conta).
+  async function esquecerTelemovel() {
+    try {
+      if (!suportaPush()) return;
+      const reg = await comLimite(navigator.serviceWorker.ready, 2000);
+      const sub = reg && await reg.pushManager.getSubscription();
+      if (sub) await sb.from('push_subs').delete().eq('endpoint', sub.endpoint);
+    } catch (e) { /* sair nunca fica bloqueado por isto */ }
+  }
+
+  // Aviso no topo da app. Só aparece quando falta alguma coisa; com tudo ligado, não se vê nada.
   async function renderAlertas() {
-    const bloco = $('#alertas-bloco');
-    if (!bloco) return;
-    const texto = $('#alertas-texto'), nota = $('#alertas-nota');
-    const on = $('#btn-alertas'), off = $('#btn-alertas-off');
-    bloco.hidden = false;
+    const aviso = $('#alertas-aviso');
+    if (!aviso) return;
+    const texto = $('#alertas-texto'), btn = $('#btn-alertas');
+    const mostrar = (msg, comBotao) => { texto.textContent = msg; btn.hidden = !comBotao; aviso.hidden = false; };
+    aviso.hidden = true;
 
-    if (!suportaPush()) {
-      on.hidden = true; off.hidden = true;
-      texto.textContent = 'Este telemóvel não suporta alertas.';
-      nota.textContent = '';
-      return;
+    if (ehIOS() && !isInstalada()) {
+      return mostrar('Para receber alertas, adicione a app ao ecrã principal (Partilhar → Adicionar ao ecrã principal) e abra-a por esse ícone.', false);
     }
-    if (!isInstalada()) {
-      on.hidden = true; off.hidden = true;
-      texto.textContent = 'Para receber alertas, adicione a app ao ecrã principal.';
-      nota.textContent = 'No Safari: Partilhar → Adicionar ao ecrã principal. Depois abra a app por esse ícone.';
-      return;
+    if (!suportaPush()) return;
+    if (Notification.permission === 'denied') {
+      return mostrar('Os alertas estão bloqueados neste telemóvel. Para os ligar: Definições → Notificações → Prolegal Solutions.', false);
     }
-    texto.textContent = 'Ligue para receber aviso antes de cada reunião e prazo, mesmo com a app fechada.';
-    nota.textContent = '';
-    on.hidden = false;
-    off.hidden = true;
-
-    const ligado = !!(await subscricaoAtual()) && Notification.permission === 'granted';
-    texto.textContent = ligado
-      ? 'Os alertas estão ligados neste telemóvel. Recebe aviso antes de cada reunião e prazo, mesmo com a app fechada.'
-      : 'Ligue para receber aviso antes de cada reunião e prazo, mesmo com a app fechada.';
-    on.hidden = ligado;
-    off.hidden = !ligado;
-    nota.textContent = Notification.permission === 'denied'
-      ? 'A autorização foi recusada. Para voltar a ligar: Definições do iPhone → Notificações → Prolegal Solutions.'
-      : 'Cada telemóvel liga-se à parte.';
+    if (Notification.permission === 'default') {
+      return mostrar('Para receber aviso antes de cada reunião e prazo, mesmo com a app fechada, toque em “Permitir alertas”. Só é pedido uma vez.', true);
+    }
+    if (!alertasOk) alertasOk = await sincronizarAlertas();
+    if (!alertasOk) mostrar('Não foi possível ligar os alertas neste telemóvel.', true);
   }
 
   function atualizarBadge() {
@@ -692,7 +698,6 @@
     if (!el) return;
 
     if (el.id === 'btn-alertas') return ligarAlertas();
-    if (el.id === 'btn-alertas-off') return desligarAlertas();
     if ('menu' in el.dataset) return toggleMenu(true);
     if ('closeMenu' in el.dataset) return toggleMenu(false);
     if (el.dataset.tab) return showTab(el.dataset.tab);
@@ -731,7 +736,13 @@
     if ('novoPrazo' in el.dataset) return openPrazo(null);
     if (el.dataset.editPrazo) return openPrazo(el.dataset.editPrazo);
     if ('close' in el.dataset) return el.closest('dialog').close();
-    if ('logout' in el.dataset) { await sb.auth.signOut(); return; }
+    if ('logout' in el.dataset) {
+      // Antes de sair: este telemóvel deixa de receber os alertas desta conta.
+      await esquecerTelemovel();
+      alertasOk = false;
+      await sb.auth.signOut();
+      return;
+    }
   });
 
   document.getElementById('c-cores').addEventListener('click', (e) => {
