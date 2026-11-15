@@ -1,1 +1,14 @@
- 
+Ícones da app: a balança do escritório dentro de um calendário (agenda e prazos).
+O desenho original está em icone-calendario.svg (azul #14213d, dourado #d8b26e).
+
+- icon-512.png e icon-192.png: cantos arredondados, para Android e para o cabeçalho da app.
+- apple-touch-icon.png (180x180): quadrado e sem transparência; o iPhone arredonda sozinho.
+- icon-maskable-512.png: quadrado, com o desenho mais pequeno para caber na zona segura
+  do Android (que pode cortar o ícone em círculo).
+
+O site institucional (raiz) continua com a balança sozinha, que é a marca do escritório.
+No iPhone, o ícone do ecrã principal só muda depois de remover a app e voltar a fazer
+"Adicionar ao ecrã principal".
+
+Quando os ícones mudarem, mudar também o ?v=N nos links de index.html e no
+manifest.webmanifest: sem isso o Safari continua a mostrar o ícone antigo da cache.
