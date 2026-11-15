@@ -410,6 +410,14 @@
     const cor = atual ? atual.cor : CORES[categorias.length % CORES.length];
     $('#c-cores').innerHTML = CORES.map((x) => `
       <button type="button" data-cor="${x}" style="background:${x}" aria-pressed="${x === cor}" aria-label="Cor ${x}"></button>`).join('');
+    // Uma categoria com registos não muda entre trabalho e pessoal: passar a pessoal
+    // mostraria aos convidados os clientes, contactos e honorários que lá estão.
+    // A base de dados recusa a mudança (supabase-categorias-seguras.sql); aqui só se explica.
+    const usada = atual ? reunioes.filter((m) => m.categoria_id === atual.id).length + prazos.filter((p) => p.categoria_id === atual.id).length : 0;
+    $('#c-pessoal').disabled = usada > 0;
+    $('#c-pessoal-ajuda').textContent = usada > 0
+      ? `Já tem ${usada} ${usada > 1 ? 'registos' : 'registo'}, por isso não pode mudar entre trabalho e pessoal. Para separar, crie uma categoria nova e mude lá os registos.`
+      : 'Esconde o cliente e os honorários, fica de fora da faturação e é partilhada com os convidados.';
     if (atual) {
       $('#c-id').value = atual.id;
       $('#c-nome').value = atual.nome;

@@ -14,7 +14,7 @@ Responder em português de Portugal. Commits em português, curtos, no estilo do
 
 ## Regras obrigatórias
 
-1. **Qualquer alteração a `app/` exige subir a versão em três sítios, com o mesmo número:** `CACHE` em `app/sw.js`, `app.js?v=N` na lista `SHELL` de `app/sw.js` e `app.js?v=N` em `app/index.html`. Sem isto, os telemóveis continuam com a versão antiga.
+1. **Qualquer alteração a `app/` exige subir a versão em quatro sítios, com o mesmo número:** `CACHE` em `app/sw.js`, `app.js?v=N` na lista `SHELL` de `app/sw.js`, `app.js?v=N` e o texto `Versão N` em `app/index.html`. Sem isto, os telemóveis continuam com a versão antiga.
 2. **Alterações à base de dados**: ficheiro novo `app/supabase-<tema>.sql`, idempotente (`if not exists`, `create or replace`, `drop policy if exists`), que pode correr duas vezes sem estragar nada. A app tem de continuar a funcionar enquanto o SQL ainda não foi corrido (ver `esquemaNovo` em `app.js`). Explicar no `app/LEIA-ME.md` como ativar.
 3. **Escapar sempre o texto vindo da base de dados** com `esc()` antes de o pôr em `innerHTML`.
 4. **Conteúdo jurídico e dados profissionais** (Quem somos, a Paula, áreas de atuação, contactos, Política de Privacidade): não inventar nem alterar factos. Propor o texto e pedir confirmação.
