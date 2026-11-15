@@ -1,10 +1,10 @@
 // Prolegal Solutions: service worker. Guarda apenas a "casca" da app para abrir sem ligação.
 // Os dados (reuniões, prazos) vêm sempre do Supabase e nunca são guardados em cache.
-const CACHE = 'prolegal-app-v13';
+const CACHE = 'prolegal-app-v14';
 const SHELL = [
   './',
   'index.html',
-  'app.js?v=13',
+  'app.js?v=14',
   'config.js',
   'manifest.webmanifest',
   'icons/icon-192.png',

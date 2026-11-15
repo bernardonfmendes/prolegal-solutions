@@ -29,17 +29,61 @@ async function sb(caminho: string, init: RequestInit = {}) {
 }
 
 // O instante UTC que corresponde a uma hora local em Lisboa, num certo dia
-function instanteEmLisboa(dia: string, hora: number): Date {
+function instanteEmLisboa(dia: string, hora: number, minuto = 0): Date {
   const [a, m, d] = dia.split('-').map(Number);
   for (const desvio of [0, -1, 1, 2]) {           // tenta os desvios possíveis (inverno/verão)
-    const t = new Date(Date.UTC(a, m - 1, d, hora - desvio, 0, 0));
+    const t = new Date(Date.UTC(a, m - 1, d, hora - desvio, minuto, 0));
     const partes = new Intl.DateTimeFormat('en-GB', {
       timeZone: ZONA, hour: '2-digit', hour12: false, year: 'numeric', month: '2-digit', day: '2-digit'
     }).formatToParts(t);
     const v = Object.fromEntries(partes.map((p) => [p.type, p.value]));
     if (Number(v.hour) === hora && Number(v.day) === d && Number(v.month) === m && Number(v.year) === a) return t;
   }
-  return new Date(Date.UTC(a, m - 1, d, hora, 0, 0));
+  return new Date(Date.UTC(a, m - 1, d, hora, minuto, 0));
+}
+
+// ---------- repetições (a mesma regra da app, em app.js) ----------
+// Registos que não se repetem usam esta "ocorrência" fixa: os avisos já enviados continuam válidos.
+const SEM_REPETICAO = '1970-01-01';
+const REPETE = new Set(['semanal', 'quinzenal', 'mensal', 'anual']);
+// A série que começa no dia `base` (AAAA-MM-DD) tem uma ocorrência no dia `dia`?
+// Dia 31 "todos os meses" cai no último dia dos meses curtos; 29/02 a 28/02 nos anos comuns.
+function ocorreEm(base: string, repetir: string, dia: string): boolean {
+  const [by, bm, bd] = base.split('-').map(Number);
+  const [y, m, d] = dia.split('-').map(Number);
+  const n = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(by, bm - 1, bd)) / 86400000);
+  if (n < 0) return false;
+  if (n === 0) return true;
+  const mesmoDiaDoMes = d === Math.min(bd, new Date(Date.UTC(y, m, 0)).getUTCDate());
+  switch (repetir) {
+    case 'semanal': return n % 7 === 0;
+    case 'quinzenal': return n % 14 === 0;
+    case 'mensal': return mesmoDiaDoMes;
+    case 'anual': return m === bm && mesmoDiaDoMes;
+    default: return false;
+  }
+}
+const somaDias = (dia: string, n: number) => {
+  const [y, m, d] = dia.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+};
+function horaMinEmLisboa(iso: string): [number, number] {
+  const v = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: ZONA, hour: '2-digit', minute: '2-digit', hour12: false })
+    .formatToParts(new Date(iso)).map((p) => [p.type, p.value]));
+  return [Number(v.hour) % 24, Number(v.minute)];
+}
+// Cada vez que a reunião acontece entre `desde` e `ate`, à mesma hora de Lisboa (acerta a mudança da hora)
+function ocorrencias(m: { inicio: string; repetir?: string }, desde: Date, ate: Date): { inicio: string; ocorrencia: string }[] {
+  if (!REPETE.has(m.repetir || '')) return [{ inicio: m.inicio, ocorrencia: SEM_REPETICAO }];
+  const base = diaDe(m.inicio);
+  const [h, mi] = horaMinEmLisboa(m.inicio);
+  const out: { inicio: string; ocorrencia: string }[] = [];
+  for (let dia = diaDe(desde.toISOString()); dia <= diaDe(ate.toISOString()); dia = somaDias(dia, 1)) {
+    if (!ocorreEm(base, m.repetir!, dia)) continue;
+    const t = instanteEmLisboa(dia, h, mi);
+    if (t >= desde && t <= ate) out.push({ inicio: t.toISOString(), ocorrencia: dia });
+  }
+  return out;
 }
 
 const fmtHora = (iso: string) =>
@@ -86,8 +130,9 @@ Deno.serve(async () => {
     // olha para reuniões que começaram há pouco (FOLGA), para esse aviso não se perder.
     const desde = new Date(agora.getTime() - FOLGA_MS).toISOString();
     const [reunioes, prazos, subs, convidados, catsPessoais, meus, novos] = await Promise.all([
-      sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local,categoria_id&estado=eq.agendada&inicio=gte.${desde}&inicio=lte.${limite}`),
-      sb(`prazos?select=id,user_id,descricao,data_limite,avisos,concluido&concluido=is.false`),
+      // As que começam nesta janela e todas as que se repetem (a próxima vez pode cair nesta janela)
+      sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local,categoria_id,repetir&estado=eq.agendada&inicio=lte.${limite}&or=(inicio.gte.${desde},repetir.neq.nunca)`),
+      sb(`prazos?select=id,user_id,descricao,data_limite,avisos,concluido,repetir&concluido=is.false`),
       sb(`push_subs?select=id,user_id,endpoint,p256dh,auth`),
       sb(`convidados?select=dono,convidado`).catch(() => []),
       sb(`categorias?select=id&pessoal=is.true`),
@@ -109,10 +154,12 @@ Deno.serve(async () => {
     const porUser = new Map<string, any[]>();
     for (const s of subs) { if (!porUser.has(s.user_id)) porUser.set(s.user_id, []); porUser.get(s.user_id)!.push(s); }
 
-    type Pendente = { user_id: string; registo_id: string; tipo: 'reuniao' | 'prazo' | 'novo'; minutos: number; titulo: string; corpo: string; dia: string };
+    type Pendente = { user_id: string; registo_id: string; tipo: 'reuniao' | 'prazo' | 'novo'; minutos: number; ocorrencia: string; titulo: string; corpo: string; dia: string };
     const pendentes: Pendente[] = [];
 
-    for (const m of reunioes) {
+    for (const r of reunioes) for (const o of ocorrencias(r, new Date(desde), new Date(limite))) {
+      // Numa repetição, "m" é a reunião nesse dia (mesma hora); "o.ocorrencia" distingue cada semana/mês
+      const m = { ...r, inicio: o.inicio };
       const t = new Date(m.inicio).getTime();
       const pessoal = pessoais.has(m.categoria_id);
       // Quanto falta de facto: um aviso que saia atrasado (ou de uma reunião criada em cima
@@ -124,7 +171,7 @@ Deno.serve(async () => {
       for (const min of lista) {
         if (agora.getTime() >= t - min * 60000 && agora.getTime() <= t + FOLGA_MS) {
           pendentes.push({
-            user_id: u, registo_id: m.id, tipo: 'reuniao', minutos: min,
+            user_id: u, registo_id: m.id, tipo: 'reuniao', minutos: min, ocorrencia: o.ocorrencia,
             titulo: `${m.cliente || 'Reunião'} ${falta === 0 ? (t < agora.getTime() ? 'já começou' : 'agora') : quantoFalta(falta)}`,
             corpo: `${fmtHora(m.inicio)}${m.local ? ' · ' + m.local : ''}`,
             dia: diaDe(m.inicio)
@@ -140,7 +187,7 @@ Deno.serve(async () => {
       for (const u of membrosDe(m.user_id)) {
         if (u === m.user_id) continue;
         pendentes.push({
-          user_id: u, registo_id: m.id, tipo: 'novo', minutos: 0,
+          user_id: u, registo_id: m.id, tipo: 'novo', minutos: 0, ocorrencia: SEM_REPETICAO,
           titulo: 'Novo registo pessoal',
           corpo: `${m.cliente || 'Sem título'} · ${diaHora(m.inicio, m.dia_todo)}`,
           dia: diaDe(m.inicio)
@@ -153,7 +200,9 @@ Deno.serve(async () => {
         const quando = new Date(instanteEmLisboa(p.data_limite, HORA_PRAZO).getTime() - dias * 86400000);
         if (agora >= quando && agora.getTime() - quando.getTime() < 36 * 3600000) {
           pendentes.push({
+            // Um prazo que se repete avança a data_limite quando é concluído: cada data é uma ocorrência
             user_id: p.user_id, registo_id: p.id, tipo: 'prazo', minutos: dias,
+            ocorrencia: REPETE.has(p.repetir) ? p.data_limite : SEM_REPETICAO,
             titulo: dias === 0 ? 'Prazo termina hoje' : `Prazo ${quantoFalta(dias * 1440)}`,
             corpo: p.descricao || '',
             dia: p.data_limite
@@ -162,13 +211,22 @@ Deno.serve(async () => {
       }
     }
 
+    // Marcar primeiro. Se já lá estiver, este aviso já saiu e não se repete.
+    // Se supabase-repeticoes.sql ainda não tiver corrido (sem a coluna "ocorrencia"), marca como
+    // antes: os avisos continuam a sair, só as repetições ficam limitadas ao primeiro aviso.
+    let semOcorrencia = false;
+    const marcar = (a: Pendente) => fetch(`${URL_SB}/rest/v1/avisos_enviados?on_conflict=registo_id,tipo,minutos,user_id${semOcorrencia ? '' : ',ocorrencia'}`, {
+      method: 'POST',
+      headers: { apikey: CHAVE, Authorization: `Bearer ${CHAVE}`, 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates,return=representation' },
+      body: JSON.stringify({ user_id: a.user_id, registo_id: a.registo_id, tipo: a.tipo, minutos: a.minutos, ...(semOcorrencia ? {} : { ocorrencia: a.ocorrencia }) })
+    });
     for (const a of pendentes) {
-      // Marcar primeiro. Se já lá estiver, este aviso já saiu e não se repete.
-      const r = await fetch(`${URL_SB}/rest/v1/avisos_enviados?on_conflict=registo_id,tipo,minutos,user_id`, {
-        method: 'POST',
-        headers: { apikey: CHAVE, Authorization: `Bearer ${CHAVE}`, 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates,return=representation' },
-        body: JSON.stringify({ user_id: a.user_id, registo_id: a.registo_id, tipo: a.tipo, minutos: a.minutos })
-      });
+      let r = await marcar(a);
+      if (!semOcorrencia && r.status === 400) {
+        const erro = await r.text();
+        if (/ocorrencia|42P10|PGRST204/.test(erro)) { semOcorrencia = true; r = await marcar(a); }
+        else { relatorio.erros.push(`avisos_enviados: ${erro.slice(0, 160)}`); continue; }
+      }
       const criado = await r.json().catch(() => []);
       if (!r.ok || !Array.isArray(criado) || criado.length === 0) continue;   // já tinha sido enviado
 
@@ -176,7 +234,7 @@ Deno.serve(async () => {
 
       for (const s of (porUser.get(a.user_id) || [])) {
         try {
-          const res = await enviar(s, { titulo: a.titulo, corpo: a.corpo, dia: a.dia, tag: `${a.tipo}-${a.registo_id}` });
+          const res = await enviar(s, { titulo: a.titulo, corpo: a.corpo, dia: a.dia, tag: `${a.tipo}-${a.registo_id}-${a.ocorrencia}` });
           if (res.status === 404 || res.status === 410) {
             await sb(`push_subs?id=eq.${s.id}`, { method: 'DELETE' });   // dispositivo já não existe
             relatorio.removidos++;

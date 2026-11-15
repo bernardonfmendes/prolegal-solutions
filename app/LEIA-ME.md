@@ -44,3 +44,20 @@ impede que a limpeza dos avisos antigos seja chamada de fora da base de dados.
 
 ## Atualizar
 Substituir os ficheiros no GitHub e fazer commit. Se a app mostrar a versão antiga, fechar e reabrir.
+
+## Repetições (todas as semanas, de 15 em 15 dias, mensal, anual)
+Um registo que se repete é uma só linha; as datas seguintes calculam-se na app e nos alertas.
+- No calendário aparece em todas as datas da série. "Editar série" muda todas as datas.
+- Confirmar cliente e "Marcar realizada" só no registo original, não nas repetições.
+- Um prazo que se repete, ao ser concluído, passa para a próxima data em vez de ficar arquivado.
+- Dia 31 "todos os meses" cai no último dia dos meses mais curtos; 29/02 a 28/02 nos anos comuns.
+- Faturação: uma reunião de trabalho que se repete conta uma vez (as repetições não são faturadas à parte).
+
+Para os alertas do telemóvel saírem em cada repetição (e não só na primeira), por esta ordem:
+1. Correr `supabase-repeticoes.sql` no SQL Editor (pode correr-se mais do que uma vez).
+2. Publicar a função `supabase/functions/enviar-alertas` (ver `ALERTAS-INSTALAR.md`).
+3. Só depois, correr no SQL Editor:
+   `alter table public.avisos_enviados drop constraint if exists avisos_enviados_unico_por_pessoa;`
+
+Enquanto o passo 1 não correr, a app funciona na mesma; o convidado só não vê "Ocupado" nas
+repetições do trabalho. A função nova também funciona antes do passo 1 (só não repete os avisos).
