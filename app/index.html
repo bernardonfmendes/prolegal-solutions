@@ -193,6 +193,7 @@
   textarea{min-height:90px;resize:vertical}
   .check{display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--ink)}
   .check input{width:auto}
+  .check:has(input:disabled){opacity:.5;cursor:not-allowed}
   input[type=datetime-local],input[type=date],input[type=month],select{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%}
   input:-webkit-autofill,textarea:-webkit-autofill,select:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px var(--bg) inset;-webkit-text-fill-color:var(--ink);caret-color:var(--ink)}
   dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100vw - 24px));background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3);
@@ -341,7 +342,7 @@
     <button class="item so-dona" data-tab="v-fact">Faturação</button>
     <button class="item so-calendario so-dona" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
-    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 10</p>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 11</p>
   </nav>
 </div>
 
@@ -357,7 +358,7 @@
       <label for="c-nome">Nome</label>
       <input id="c-nome" required maxlength="40" placeholder="ex.: Audiência">
       <label class="check"><input type="checkbox" id="c-pessoal"> Não é trabalho</label>
-      <p class="muted" style="margin:-4px 0 10px;font-size:12px">Esconde o cliente e os honorários, e fica de fora da faturação.</p>
+      <p class="muted" id="c-pessoal-ajuda" style="margin:-4px 0 10px;font-size:12px">Esconde o cliente e os honorários, fica de fora da faturação e é partilhada com os convidados.</p>
       <label>Cor</label>
       <div class="cores" id="c-cores" role="group" aria-label="Cor"></div>
     </div>
@@ -500,6 +501,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>

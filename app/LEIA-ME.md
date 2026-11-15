@@ -28,6 +28,16 @@ e os honorários. Esses registos ficam de fora da faturação, mas continuam no 
 
 Activa-se correndo uma vez `supabase-pessoal.sql` no SQL Editor.
 
+## Proteção do sigilo nas categorias (obrigatório se houver convidados)
+Uma categoria que já tem registos não pode mudar entre trabalho e "Não é trabalho".
+Sem esta regra, marcar como pessoal uma categoria de trabalho (por exemplo "Audiência")
+mostrava aos convidados o cliente, os contactos, os honorários e os tópicos de todas
+essas reuniões. Para separar registos, cria-se uma categoria nova e mudam-se lá.
+
+Activa-se correndo uma vez `supabase-categorias-seguras.sql` no SQL Editor (depois de
+`supabase-convidados.sql`). Pode correr-se mais do que uma vez sem risco. Também
+impede que a limpeza dos avisos antigos seja chamada de fora da base de dados.
+
 ## Instalar no telemóvel
 - iPhone: abrir o endereço no Safari → Partilhar → "Adicionar ao ecrã principal".
 - Android: abrir no Chrome → menu ⋮ → "Instalar aplicação".

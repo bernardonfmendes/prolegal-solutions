@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verificar-js.sh",
+            "timeout": 20,
+            "statusMessage": "A verificar a sintaxe do JavaScript"
+          }
+        ]
+      }
+    ]
+  }
+}
