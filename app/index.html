@@ -187,6 +187,14 @@
   .avisos-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   form .avisos-grid label{display:flex;align-items:center;gap:8px;margin:0;padding:10px 12px;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px}
   .avisos-grid input{width:auto;margin:0;accent-color:var(--navy)}
+  /* Dias da semana de uma repetição: sete quadrados numa linha */
+  .dias-semana{border:0;padding:0;margin:10px 0 0;min-width:0}
+  .dias-semana legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:6px}
+  .dias-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+  form .dias-grid label{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0;padding:8px 0;font-size:12px;
+    color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;cursor:pointer}
+  .dias-grid input{width:auto;margin:0;accent-color:var(--navy)}
+  form .dias-grid label:has(input:checked){border-color:var(--gold);font-weight:700}
 
   form label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
   input,select,textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -351,7 +359,7 @@
     <button class="item so-dona" data-tab="v-fact">Faturação</button>
     <button class="item so-calendario so-dona" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
-    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 13</p>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 14</p>
   </nav>
 </div>
 
@@ -425,7 +433,11 @@
         <option value="nunca">Nunca</option><option value="semanal">Todas as semanas</option>
         <option value="quinzenal">De 15 em 15 dias</option><option value="mensal">Todos os meses</option>
         <option value="anual">Todos os anos</option>
-      </select></div>
+      </select>
+      <fieldset class="dias-semana" id="r-dias" hidden>
+        <legend>Nos dias</legend>
+        <div class="dias-grid"><label><input type="checkbox" name="diaSem" value="1"><span>Seg</span></label><label><input type="checkbox" name="diaSem" value="2"><span>Ter</span></label><label><input type="checkbox" name="diaSem" value="3"><span>Qua</span></label><label><input type="checkbox" name="diaSem" value="4"><span>Qui</span></label><label><input type="checkbox" name="diaSem" value="5"><span>Sex</span></label><label><input type="checkbox" name="diaSem" value="6"><span>Sáb</span></label><label><input type="checkbox" name="diaSem" value="7"><span>Dom</span></label></div>
+      </fieldset></div>
       <div class="so-trabalho"><label for="r-honorarios">Honorários (€)</label>
       <input id="r-honorarios" type="number" min="0" step="0.01" inputmode="decimal" value="0"></div>
       <label for="r-topicos" id="lbl-topicos">Tópicos da reunião</label>
@@ -510,6 +522,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>
