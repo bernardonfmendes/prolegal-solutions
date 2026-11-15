@@ -47,12 +47,21 @@ function instanteEmLisboa(dia: string, hora: number, minuto = 0): Date {
 const SEM_REPETICAO = '1970-01-01';
 const REPETE = new Set(['semanal', 'quinzenal', 'mensal', 'anual']);
 // A série que começa no dia `base` (AAAA-MM-DD) tem uma ocorrência no dia `dia`?
-// Dia 31 "todos os meses" cai no último dia dos meses curtos; 29/02 a 28/02 nos anos comuns.
-function ocorreEm(base: string, repetir: string, dia: string): boolean {
+// Com dias da semana escolhidos (1 = segunda … 7 = domingo): nesses dias; de 15 em 15 dias,
+// uma semana sim, outra não. Dia 31 "todos os meses" cai no último dia dos meses curtos;
+// 29/02 a 28/02 nos anos comuns.
+function ocorreEm(base: string, repetir: string, dia: string, dias?: number[] | null): boolean {
   const [by, bm, bd] = base.split('-').map(Number);
   const [y, m, d] = dia.split('-').map(Number);
-  const n = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(by, bm - 1, bd)) / 86400000);
+  const tb = Date.UTC(by, bm - 1, bd), td = Date.UTC(y, m - 1, d);
+  const n = Math.round((td - tb) / 86400000);
   if (n < 0) return false;
+  if ((repetir === 'semanal' || repetir === 'quinzenal') && Array.isArray(dias) && dias.length) {
+    const iso = (t: number) => ((new Date(t).getUTCDay() + 6) % 7) + 1;
+    if (!dias.includes(iso(td))) return false;
+    const semanas = Math.round(((td - (iso(td) - 1) * 86400000) - (tb - (iso(tb) - 1) * 86400000)) / (7 * 86400000));
+    return repetir === 'semanal' || semanas % 2 === 0;
+  }
   if (n === 0) return true;
   const mesmoDiaDoMes = d === Math.min(bd, new Date(Date.UTC(y, m, 0)).getUTCDate());
   switch (repetir) {
@@ -73,13 +82,13 @@ function horaMinEmLisboa(iso: string): [number, number] {
   return [Number(v.hour) % 24, Number(v.minute)];
 }
 // Cada vez que a reunião acontece entre `desde` e `ate`, à mesma hora de Lisboa (acerta a mudança da hora)
-function ocorrencias(m: { inicio: string; repetir?: string }, desde: Date, ate: Date): { inicio: string; ocorrencia: string }[] {
+function ocorrencias(m: { inicio: string; repetir?: string; dias_semana?: number[] | null }, desde: Date, ate: Date): { inicio: string; ocorrencia: string }[] {
   if (!REPETE.has(m.repetir || '')) return [{ inicio: m.inicio, ocorrencia: SEM_REPETICAO }];
   const base = diaDe(m.inicio);
   const [h, mi] = horaMinEmLisboa(m.inicio);
   const out: { inicio: string; ocorrencia: string }[] = [];
   for (let dia = diaDe(desde.toISOString()); dia <= diaDe(ate.toISOString()); dia = somaDias(dia, 1)) {
-    if (!ocorreEm(base, m.repetir!, dia)) continue;
+    if (!ocorreEm(base, m.repetir!, dia, m.dias_semana)) continue;
     const t = instanteEmLisboa(dia, h, mi);
     if (t >= desde && t <= ate) out.push({ inicio: t.toISOString(), ocorrencia: dia });
   }
@@ -131,7 +140,7 @@ Deno.serve(async () => {
     const desde = new Date(agora.getTime() - FOLGA_MS).toISOString();
     const [reunioes, prazos, subs, convidados, catsPessoais, meus, novos] = await Promise.all([
       // As que começam nesta janela e todas as que se repetem (a próxima vez pode cair nesta janela)
-      sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local,categoria_id,repetir&estado=eq.agendada&inicio=lte.${limite}&or=(inicio.gte.${desde},repetir.neq.nunca)`),
+      sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local,categoria_id,repetir,dias_semana&estado=eq.agendada&inicio=lte.${limite}&or=(inicio.gte.${desde},repetir.neq.nunca)`),
       sb(`prazos?select=id,user_id,descricao,data_limite,avisos,concluido,repetir&concluido=is.false`),
       sb(`push_subs?select=id,user_id,endpoint,p256dh,auth`),
       sb(`convidados?select=dono,convidado`).catch(() => []),

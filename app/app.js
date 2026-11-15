@@ -57,11 +57,22 @@
   // Dias de calendário entre duas datas, sem tropeçar na mudança da hora
   const diasEntre = (a, b) => Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000);
   const ultimoDiaDoMes = (y, m) => new Date(y, m + 1, 0).getDate();
+  const DIAS_CURTOS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  const diaIso = (d) => ((d.getDay() + 6) % 7) + 1;          // 1 = segunda … 7 = domingo
+  const segundaDe = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - diaIso(d) + 1);
+  // Dias escolhidos para "todas as semanas" / "de 15 em 15 dias" (vazio = o dia da semana do início)
+  const diasDaSerie = (repetir, dias) => ((repetir === 'semanal' || repetir === 'quinzenal') && Array.isArray(dias) && dias.length ? dias : null);
   // A série que começa em `base` tem uma ocorrência no dia `dia`?
+  // Com dias escolhidos: nesses dias da semana (de 15 em 15 dias, uma semana sim, outra não).
   // Dia 31 "todos os meses" cai no último dia dos meses mais curtos; 29 de fevereiro, a 28 nos anos comuns.
-  function ocorreEm(base, repetir, dia) {
+  function ocorreEm(base, repetir, dia, dias) {
     const n = diasEntre(base, dia);
     if (n < 0) return false;
+    const escolhidos = diasDaSerie(repetir, dias);
+    if (escolhidos) {
+      if (!escolhidos.includes(diaIso(dia))) return false;
+      return repetir === 'semanal' || (diasEntre(segundaDe(base), segundaDe(dia)) / 7) % 2 === 0;
+    }
     if (n === 0) return true;
     const mesmoDiaDoMes = () => dia.getDate() === Math.min(base.getDate(), ultimoDiaDoMes(dia.getFullYear(), dia.getMonth()));
     switch (repetir) {
@@ -73,6 +84,8 @@
     }
   }
   const repete = (x) => !!(x && x.repetir && x.repetir !== 'nunca');
+  // "Todas as semanas · Seg, Qui"
+  const textoSerie = (x) => (REPETE[x.repetir] || '') + (diasDaSerie(x.repetir, x.dias_semana) ? ' · ' + [...x.dias_semana].sort().map((d) => DIAS_CURTOS[d - 1]).join(', ') : '');
   // A mesma reunião (ou "ocupado") noutro dia: mesma hora e duração
   function naData(m, dia) {
     const ini = new Date(m.inicio);
@@ -82,9 +95,9 @@
     return { ...m, inicio: mover(m.inicio), fim: m.fim ? mover(m.fim) : m.fim, _repeticao: true };
   }
   // Primeira ocorrência a partir de `desde` (inclusive), ou null se não houver
-  function proximaData(base, repetir, desde) {
+  function proximaData(base, repetir, desde, dias) {
     const d = startOfDay(desde < base ? base : desde);
-    for (let i = 0; i < 800; i++, d.setDate(d.getDate() + 1)) if (ocorreEm(base, repetir, d)) return new Date(d);
+    for (let i = 0; i < 800; i++, d.setDate(d.getDate() + 1)) if (ocorreEm(base, repetir, d, dias)) return new Date(d);
     return null;
   }
 
@@ -182,7 +195,7 @@
     const pessoal = ehPessoal(m.categoria_id);
     // Confirmação e "realizada" são do registo original; as repetições só mostram e editam a série
     const pendente = !pessoal && !m._repeticao && m.estado === 'agendada' && futura && !m.confirmada;
-    const serie = repete(m) ? ` · ↻ ${REPETE[m.repetir] || ''}` : '';
+    const serie = repete(m) ? ` · ↻ ${textoSerie(m)}` : '';
     const enviada = m.confirmacao_enviada_em
       ? `<span class="muted">Confirmação enviada em ${fmtDataHora(m.confirmacao_enviada_em)}</span>` : '';
     const cat = catDe(m, 'reuniao');
@@ -267,7 +280,7 @@
       .filter((m) => m.estado === 'agendada')
       .map((m) => {
         if (!repete(m)) return new Date(m.inicio) >= hojeIni ? m : null;
-        const d = proximaData(new Date(m.inicio), m.repetir, hojeIni);
+        const d = proximaData(new Date(m.inicio), m.repetir, hojeIni, m.dias_semana);
         return d ? naData(m, d) : null;
       })
       .filter(Boolean)
@@ -319,7 +332,7 @@
     // Reuniões e "ocupado": no dia marcado e, se se repetem, em cada repetição
     const comHora = (lista, tipo) => lista.forEach((m) => {
       const base = new Date(m.inicio);
-      if (repete(m) ? ocorreEm(base, m.repetir, dia) : dayKey(base) === key) {
+      if (repete(m) ? ocorreEm(base, m.repetir, dia, m.dias_semana) : dayKey(base) === key) {
         const x = naData(m, dia);
         out.push({ tipo, dados: x, hora: x.dia_todo ? null : new Date(x.inicio) });
       }
@@ -583,6 +596,7 @@
       $('#r-diatodo').checked = !!m.dia_todo;
       $('#r-local').value = m.local || '';
       $('#r-repetir').value = m.repetir || 'nunca';
+      setDiasSemana(m.dias_semana || []);
       encherCats('#r-cat', m.categoria_id, 'Reunião');
       aplicarModoPessoal();
       $('#r-honorarios').value = m.honorarios ?? 0;
@@ -605,6 +619,7 @@
       $('#r-diatodo').checked = false;
       $('#r-local').value = '';
       $('#r-repetir').value = 'nunca';
+      setDiasSemana([]);
       const cp = pessoal ? categorias.find((c) => c.pessoal) : null;
       encherCats('#r-cat', cp ? cp.id : null, 'Reunião');
       aplicarModoPessoal();
@@ -612,6 +627,23 @@
     }
     $('#d-reuniao').showModal();
   }
+
+  // ---------- dias da semana de uma repetição ----------
+  const caixasDias = () => Array.from(document.querySelectorAll('input[name=diaSem]'));
+  const diasMarcados = () => caixasDias().filter((i) => i.checked).map((i) => Number(i.value));
+  const diaDoInicio = () => { const v = $('#r-inicio').value; return v ? diaIso(new Date(v)) : null; };
+  function setDiasSemana(lista) {
+    caixasDias().forEach((i) => { i.checked = lista.includes(Number(i.value)); });
+    mostrarDiasSemana();
+  }
+  // Só aparece em "todas as semanas" e "de 15 em 15 dias"; abre com o dia do início marcado
+  function mostrarDiasSemana() {
+    const r = $('#r-repetir').value;
+    const semanal = r === 'semanal' || r === 'quinzenal';
+    $('#r-dias').hidden = !semanal;
+    if (semanal && !diasMarcados().length && diaDoInicio()) setDiasSemanaSoVisual([diaDoInicio()]);
+  }
+  function setDiasSemanaSoVisual(lista) { caixasDias().forEach((i) => { i.checked = lista.includes(Number(i.value)); }); }
 
   function encherCats(sel, escolhida, omissao) {
     const el = $(sel);
@@ -872,6 +904,9 @@
 
   document.addEventListener('change', (e) => {
     if (e.target.id === 'r-cat') aplicarModoPessoal(true);
+    if (e.target.id === 'r-repetir') mostrarDiasSemana();
+    // Mudar a data com um só dia marcado leva esse dia atrás (ex.: passar de segunda para terça)
+    if (e.target.id === 'r-inicio' && !$('#r-dias').hidden && diasMarcados().length <= 1 && diaDoInicio()) setDiasSemanaSoVisual([diaDoInicio()]);
     if (e.target.dataset.togglePrazo) togglePrazo(e.target.dataset.togglePrazo, e.target.checked);
     if (e.target.id === 'fact-mes') renderFact();
   });
@@ -908,6 +943,10 @@
       payload.local = $('#r-local').value.trim() || null;
       payload.repetir = $('#r-repetir').value;
       payload.categoria_id = $('#r-cat').value || null;
+      // Dias da semana: só em "todas as semanas" / "de 15 em 15 dias"
+      const dias = diasDaSerie(payload.repetir, diasMarcados());
+      const orig = id ? reunioes.find((x) => x.id === id) : null;
+      if (dias || (orig && 'dias_semana' in orig)) payload.dias_semana = dias;
     }
     if (id) {
       const orig = reunioes.find((x) => x.id === id);
@@ -921,16 +960,22 @@
     const doOutro = id && (reunioes.find((x) => x.id === id) || {}).user_id !== user.id;
     const meus = payload.avisos_min;
     if (doOutro) delete payload.avisos_min;
-    const res = id
-      ? await sb.from('reunioes').update(payload).eq('id', id)
-      : await sb.from('reunioes').insert({ ...payload, user_id: user.id });
+    const gravar = (p) => (id ? sb.from('reunioes').update(p).eq('id', id) : sb.from('reunioes').insert({ ...p, user_id: user.id }));
+    let res = await gravar(payload);
+    // Se supabase-repeticoes.sql ainda não correu, guarda sem os dias da semana em vez de falhar
+    let semDias = false;
+    if (res.error && 'dias_semana' in payload && /dias_semana/.test(res.error.message)) {
+      delete payload.dias_semana; semDias = true;
+      res = await gravar(payload);
+    }
     if (res.error) { toast('Erro: ' + res.error.message); return; }
+    if (semDias) toast('Guardado, mas os dias da semana ainda não estão ativos.');
     if (doOutro) {
       const a = await sb.from('avisos_meus').upsert({ registo_id: id, user_id: user.id, avisos_min: meus }, { onConflict: 'registo_id,user_id' });
       if (a.error) toast('Guardado, mas os seus lembretes não: ' + a.error.message);
     }
     $('#d-reuniao').close();
-    toast(ehPessoal(payload.categoria_id) ? 'Guardado' : 'Reunião guardada');
+    if (!semDias) toast(ehPessoal(payload.categoria_id) ? 'Guardado' : 'Reunião guardada');
     await loadAll();
   });
 
