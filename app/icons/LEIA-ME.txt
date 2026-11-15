@@ -9,3 +9,6 @@ O desenho original está em icone-calendario.svg (azul #14213d, dourado #d8b26e)
 O site institucional (raiz) continua com a balança sozinha, que é a marca do escritório.
 No iPhone, o ícone do ecrã principal só muda depois de remover a app e voltar a fazer
 "Adicionar ao ecrã principal".
+
+Quando os ícones mudarem, mudar também o ?v=N nos links de index.html e no
+manifest.webmanifest: sem isso o Safari continua a mostrar o ícone antigo da cache.
