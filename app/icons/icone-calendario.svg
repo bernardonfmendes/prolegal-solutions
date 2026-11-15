@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><rect width="512" height="512" rx="112" fill="#14213d"/><g transform="translate(256 256) scale(1.1) translate(-256 -262)">
+    <!-- Calendário -->
+    <rect x="104" y="132" width="304" height="282" rx="36" fill="none" stroke="#d8b26e" stroke-width="16"/>
+    <path d="M104 168 a36 36 0 0 1 36 -36 h232 a36 36 0 0 1 36 36 v44 h-304 z" fill="#d8b26e"/>
+    <!-- Argolas -->
+    <rect x="170" y="98" width="26" height="70" rx="13" fill="#d8b26e" stroke="#14213d" stroke-width="10" paint-order="stroke"/>
+    <rect x="316" y="98" width="26" height="70" rx="13" fill="#d8b26e" stroke="#14213d" stroke-width="10" paint-order="stroke"/>
+    <!-- Balança -->
+    <g transform="translate(256 312) scale(1.06) translate(-256 -308)" fill="#d8b26e" stroke="#d8b26e" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="256" cy="244" r="9" stroke="none"/>
+      <path d="M176 260 H336" stroke-width="11" fill="none"/>
+      <path d="M256 252 V372" stroke-width="11" fill="none"/>
+      <path d="M216 380 H296" stroke-width="12" fill="none"/>
+      <path d="M182 262 L156 328 M182 262 L208 328 M330 262 L304 328 M330 262 L356 328" stroke-width="5.5" fill="none"/>
+      <path d="M146 326 H218 Q214 350 182 351 Q150 350 146 326 Z" stroke="none"/>
+      <path d="M294 326 H366 Q362 350 330 351 Q298 350 294 326 Z" stroke="none"/>
+    </g>
+  </g></svg>
