@@ -75,3 +75,8 @@ repetições do trabalho. A função nova também funciona antes do passo 1 (só
 Activa-se correndo `supabase-series.sql` no SQL Editor (depois de `supabase-repeticoes.sql`) e
 publicando a função `enviar-alertas`. Sem o SQL, a app funciona; só "Terminar repetição" e
 "Só este evento" avisam que ainda não estão ativos.
+
+## A minha cor (versão 17)
+Cada pessoa (a dona e os convidados) escolhe no menu "A minha cor" a cor dos registos pessoais que
+cria. Esses registos aparecem nessa cor para todos os que os veem, por isso percebe-se logo de quem
+são. Sem cor escolhida, fica a cor da categoria. Activa-se correndo `supabase-cores.sql` no SQL Editor.

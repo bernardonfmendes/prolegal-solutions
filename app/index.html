@@ -151,6 +151,10 @@
   .cores{display:flex;flex-wrap:wrap;gap:9px}
   .cores button{width:32px;height:32px;border-radius:50%;border:2px solid transparent;padding:0}
   .cores button[aria-pressed="true"]{border-color:var(--ink)}
+  /* Pré-visualização de "A minha cor": a faixa do calendário e a margem do cartão */
+  .cor-exemplo{display:flex;align-items:center;gap:12px;margin-top:16px}
+  .cor-exemplo .chip-ev{display:inline-block;padding:4px 10px;border-radius:6px;font-size:13px}
+  .cor-exemplo-cartao{flex:1;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--cor);border-radius:12px;font-weight:600;font-size:14px}
   .cal-nav{display:flex;align-items:center;justify-content:space-between;margin:10px 0}
   .cap::first-letter{text-transform:uppercase}
 
@@ -371,10 +375,31 @@
     <button class="item so-dona" data-tab="v-prazos">Prazos</button>
     <button class="item so-dona" data-tab="v-fact">Faturação</button>
     <button class="item so-calendario so-dona" data-tab="v-cats">Categorias</button>
+    <button class="item so-calendario" data-minha-cor>A minha cor</button>
     <button class="item sair" data-logout>Sair</button>
-    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 16</p>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 17</p>
   </nav>
 </div>
+
+<!-- Diálogo: a minha cor (cor dos registos pessoais de cada pessoa) -->
+<dialog id="d-cor">
+  <form id="f-cor" method="dialog">
+    <div class="dlg-head">
+      <h2 style="margin:0">A minha cor</h2>
+      <button type="button" class="x" data-close aria-label="Fechar">&times;</button>
+    </div>
+    <div class="dlg-body">
+      <p class="muted" style="margin:0 0 14px">Os registos pessoais que criar aparecem nesta cor, para si e para quem partilha o calendário consigo.</p>
+      <div class="cores" id="cor-cores" role="group" aria-label="Cor"></div>
+      <div class="cor-exemplo"><span class="chip-ev todo-dia" id="cor-exemplo-faixa">Exemplo</span><span class="cor-exemplo-cartao" id="cor-exemplo-cartao">Exemplo de registo</span></div>
+      <button type="button" class="btn small" id="cor-repor" style="margin-top:14px">Usar a cor da categoria</button>
+    </div>
+    <div class="dlg-acoes">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button class="btn primary" type="submit">Guardar</button>
+    </div>
+  </form>
+</dialog>
 
 <!-- Diálogo: categoria -->
 <dialog id="d-cat">
@@ -563,6 +588,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=16"></script>
+<script src="app.js?v=17"></script>
 </body>
 </html>

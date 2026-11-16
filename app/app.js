@@ -23,6 +23,8 @@
   // As regras a sério estão na base de dados (supabase-convidados.sql); aqui só se adapta o ecrã.
   let modoConvidado = false;
   let ocupados = [];
+  // "A minha cor" de cada pessoa (user_id -> cor), para pintar os registos pessoais de quem os criou
+  let cores = new Map();
   // Os meus lembretes nos registos pessoais criados pelo outro (registo_id -> minutos)
   let avisosMeus = new Map();
   const CORES = ['#1f3160', '#b42318', '#b54708', '#067647', '#6941c6', '#b8924a', '#0e7090', '#be185d'];
@@ -197,14 +199,17 @@
 
   // ---------- dados ----------
   async function loadAll() {
-    const [r, p, c, conv, av] = await Promise.all([
+    const [r, p, c, conv, av, pf] = await Promise.all([
       sb.from('reunioes').select('*').order('inicio', { ascending: true }),
       sb.from('prazos').select('*').order('data_limite', { ascending: true }),
       sb.from('categorias').select('*').order('ordem', { ascending: true }),
       // Se a migração dos convidados ainda não correu, dá erro e a app segue como antes
       sb.from('convidados').select('dono').eq('convidado', user.id),
-      sb.from('avisos_meus').select('registo_id,avisos_min')
+      sb.from('avisos_meus').select('registo_id,avisos_min'),
+      // Se supabase-cores.sql ainda não correu, dá erro e fica a cor da categoria
+      sb.from('perfis').select('user_id,cor')
     ]);
+    cores = new Map((pf && !pf.error && pf.data ? pf.data : []).map((x) => [x.user_id, x.cor]));
     avisosMeus = new Map((av && !av.error && av.data ? av.data : []).map((a) => [a.registo_id, a.avisos_min || []]));
     modoConvidado = !!(conv && !conv.error && conv.data && conv.data.length);
     ocupados = [];
@@ -349,6 +354,9 @@
   // ---------- categorias ----------
   function catDe(item, tipo) {
     const c = categorias.find((k) => k.id === item.categoria_id);
+    // Registo pessoal: na cor que quem o criou escolheu ("A minha cor"), se escolheu alguma
+    const deQuem = c && c.pessoal && item.user_id ? cores.get(item.user_id) : null;
+    if (deQuem) return { ...c, cor: deQuem };
     return c || (tipo === 'prazo' ? CAT_PRAZO : CAT_REUNIAO);
   }
   function ehPessoal(catId) {
@@ -555,10 +563,43 @@
     $('#d-cat').showModal();
   }
 
-  function corEscolhida() {
-    const b = $('#c-cores button[aria-pressed="true"]');
+  function corEscolhida(caixa = '#c-cores') {
+    const b = $(caixa + ' button[aria-pressed="true"]');
     return b ? b.dataset.cor : CORES[0];
   }
+
+  // ---------- a minha cor ----------
+  const corDaCategoriaPessoal = () => (categorias.find((c) => c.pessoal) || { cor: CORES[4] }).cor;
+  function mostrarExemploCor() {
+    const cor = corEscolhida('#cor-cores');
+    $('#cor-exemplo-faixa').style.setProperty('--c-fg', cor);
+    $('#cor-exemplo-cartao').style.setProperty('--cor', cor);
+  }
+  function openMinhaCor() {
+    const atual = cores.get(user.id) || corDaCategoriaPessoal();
+    const lista = CORES.includes(atual) ? CORES : CORES.concat([atual]);
+    $('#cor-cores').innerHTML = lista.map((x) => `
+      <button type="button" data-cor="${esc(x)}" style="background:${esc(x)}" aria-pressed="${x === atual}" aria-label="Cor ${esc(x)}"></button>`).join('');
+    $('#cor-repor').hidden = !cores.has(user.id);
+    mostrarExemploCor();
+    $('#d-cor').showModal();
+  }
+  const semTabelaPerfis = (err) => /perfis/.test(err.message || '');
+  $('#f-cor').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const { error } = await sb.from('perfis').upsert({ user_id: user.id, cor: corEscolhida('#cor-cores'), atualizado_em: new Date().toISOString() }, { onConflict: 'user_id' });
+    if (error) { toast(semTabelaPerfis(error) ? 'Esta opção ainda não está ativa no servidor.' : 'Erro: ' + error.message); return; }
+    $('#d-cor').close();
+    toast('Cor guardada');
+    await loadAll();
+  });
+  $('#cor-repor').addEventListener('click', async () => {
+    const { error } = await sb.from('perfis').delete().eq('user_id', user.id);
+    if (error) { toast('Erro: ' + error.message); return; }
+    $('#d-cor').close();
+    toast('Volta a usar a cor da categoria');
+    await loadAll();
+  });
 
   // ---------- confirmação com 1 toque ----------
   function textoConfirmacao(m) {
@@ -978,6 +1019,7 @@
     if ('dpopReuniao' in el.dataset) { fecharDPop(); return openReuniao(null, diaSel); }
     if ('dpopPrazo' in el.dataset) { fecharDPop(); return openPrazo(null, diaSel); }
     if ('dpopPessoal' in el.dataset) { fecharDPop(); return openReuniao(null, diaSel, true); }
+    if ('minhaCor' in el.dataset) { toggleMenu(false); return openMinhaCor(); }
     if ('novaCat' in el.dataset) return openCat(null);
     if (el.dataset.editCat) return openCat(el.dataset.editCat);
     if ('novaReuniao' in el.dataset) return openReuniao(null, null);
@@ -1000,11 +1042,13 @@
     }
   });
 
-  document.getElementById('c-cores').addEventListener('click', (e) => {
+  // Escolher uma cor (na categoria ou em "A minha cor")
+  ['c-cores', 'cor-cores'].forEach((idCaixa) => document.getElementById(idCaixa).addEventListener('click', (e) => {
     const b = e.target.closest('button[data-cor]');
     if (!b) return;
-    $$('#c-cores button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  });
+    $$('#' + idCaixa + ' button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    if (idCaixa === 'cor-cores') mostrarExemploCor();
+  }));
 
   document.getElementById('dpop').addEventListener('click', (e) => {
     if (e.target.classList.contains('fundo')) fecharDPop();
