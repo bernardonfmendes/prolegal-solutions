@@ -205,8 +205,8 @@
           <strong>${esc(m.cliente)}</strong>
           <div class="card-chips">${avisoReuniaoAtivo(m) ? '<span class="chip urgente">Aviso</span>' : ''}${m.confirmada ? '<span class="chip ok">Confirmada</span>' : ''}<span class="chip ${esc(m.estado)}">${LABEL[m.estado] || esc(m.estado)}</span></div>
         </div>
-        <div class="muted">${fmtDataHora(m.inicio)}${m.fim && !m.dia_todo ? ' – ' + new Date(m.fim).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}${ehPessoal(m.categoria_id) ? '' : ' · ' + fmtEur(m.honorarios)}</div>
-        <div class="cat-nome" style="--cat:${esc(cat.cor)}">${esc(cat.nome)}${m.local ? ' · ' + esc(m.local) : ''}${esc(serie)}</div>
+        <div class="quando">${fmtDataHora(m.inicio)}${m.fim && !m.dia_todo ? ' – ' + new Date(m.fim).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}${ehPessoal(m.categoria_id) ? '' : ' · ' + fmtEur(m.honorarios)}</div>
+        <div class="cat-nome" style="--cat:${esc(cat.cor)}"><span class="cat-ponto" aria-hidden="true"></span>${esc(cat.nome)}${m.local ? ' · ' + esc(m.local) : ''}${esc(serie)}</div>
         ${m.topicos ? `<p>${esc(m.topicos)}</p>` : ''}
         ${enviada ? `<div style="margin-top:6px">${enviada}</div>` : ''}
         <div class="actions">
