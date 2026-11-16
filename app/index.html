@@ -190,6 +190,16 @@
   .avisos-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   form .avisos-grid label{display:flex;align-items:center;gap:8px;margin:0;padding:10px 12px;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px}
   .avisos-grid input{width:auto;margin:0;accent-color:var(--navy)}
+  /* Terminar repetição: escolha + data na mesma linha */
+  .ate-linha{display:flex;gap:8px}
+  .ate-linha select{flex:1 1 50%}
+  .ate-linha input{flex:1 1 50%}
+  .serie-opcoes{display:grid;gap:10px}
+  .serie-opcoes .btn{width:100%;margin:0;min-height:46px}
+  #d-serie{width:min(420px,calc(100vw - 24px))}
+  /* Eventos de dia todo (e dias seguidos de eventos longos): faixa cheia, como no calendário da Apple */
+  .chip-ev.todo-dia{background:var(--c-fg)!important;color:#fff!important;font-weight:700}
+  .parte{font-weight:500;color:var(--muted);font-size:13px}
   /* Dias da semana de uma repetição: sete quadrados numa linha */
   .dias-semana{border:0;padding:0;margin:10px 0 0;min-width:0}
   .dias-semana legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:6px}
@@ -362,7 +372,7 @@
     <button class="item so-dona" data-tab="v-fact">Faturação</button>
     <button class="item so-calendario so-dona" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
-    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 15</p>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 16</p>
   </nav>
 </div>
 
@@ -415,7 +425,7 @@
       <button type="button" class="x" data-close aria-label="Fechar">×</button>
     </div>
     <div class="dlg-body">
-      <input type="hidden" id="r-id">
+      <input type="hidden" id="r-id"><input type="hidden" id="r-ocorrencia">
       <label for="r-cliente" id="lbl-cliente">Nome do cliente</label>
       <input id="r-cliente" required maxlength="120">
       <div class="so-trabalho"><label for="r-telefone">Telemóvel (para WhatsApp)</label>
@@ -424,9 +434,9 @@
       <input id="r-email" type="email" maxlength="120" placeholder="ex.: cliente@email.pt"></div>
       <div class="so-calendario"><label for="r-cat">Categoria</label>
       <select id="r-cat"></select></div>
-      <label for="r-inicio">Data e hora</label>
+      <label for="r-inicio" id="lbl-inicio">Data e hora</label>
       <input id="r-inicio" type="datetime-local" required>
-      <div class="so-calendario"><label for="r-fim">Fim</label>
+      <div class="so-calendario"><label for="r-fim" id="lbl-fim">Fim</label>
       <input id="r-fim" type="datetime-local">
       <label class="check"><input type="checkbox" id="r-diatodo"> Dia todo</label>
       <label for="r-local">Local</label>
@@ -440,7 +450,14 @@
       <fieldset class="dias-semana" id="r-dias" hidden>
         <legend>Nos dias</legend>
         <div class="dias-grid"><label><input type="checkbox" name="diaSem" value="1"><span>Seg</span></label><label><input type="checkbox" name="diaSem" value="2"><span>Ter</span></label><label><input type="checkbox" name="diaSem" value="3"><span>Qua</span></label><label><input type="checkbox" name="diaSem" value="4"><span>Qui</span></label><label><input type="checkbox" name="diaSem" value="5"><span>Sex</span></label><label><input type="checkbox" name="diaSem" value="6"><span>Sáb</span></label><label><input type="checkbox" name="diaSem" value="7"><span>Dom</span></label></div>
-      </fieldset></div>
+      </fieldset>
+      <div id="r-fim-rep" hidden>
+        <label for="r-ate-modo">Terminar repetição</label>
+        <div class="ate-linha">
+          <select id="r-ate-modo"><option value="nunca">Nunca</option><option value="data">Numa data</option></select>
+          <input id="r-ate" type="date" hidden aria-label="Último dia da repetição">
+        </div>
+      </div></div>
       <div class="so-trabalho"><label for="r-honorarios">Honorários (€)</label>
       <input id="r-honorarios" type="number" min="0" step="0.01" inputmode="decimal" value="0"></div>
       <label for="r-topicos" id="lbl-topicos">Tópicos da reunião</label>
@@ -453,7 +470,13 @@
       </select></div>
       <fieldset class="avisos-box">
         <legend id="lbl-avisos">Avisar-me antes da reunião</legend>
-        <div class="avisos-grid">
+        <div class="avisos-grid" id="avisos-dia-todo" hidden>
+          <label><input type="checkbox" name="avisoD" value="0"> No dia (9:00)</label>
+          <label><input type="checkbox" name="avisoD" value="1440"> 1 dia antes (9:00)</label>
+          <label><input type="checkbox" name="avisoD" value="2880"> 2 dias antes (9:00)</label>
+          <label><input type="checkbox" name="avisoD" value="10080"> 1 semana antes (9:00)</label>
+        </div>
+        <div class="avisos-grid" id="avisos-hora">
           <label><input type="checkbox" name="avisoR" value="1440" checked> 24 h antes</label>
           <label><input type="checkbox" name="avisoR" value="120" checked> 2 h antes</label>
           <label><input type="checkbox" name="avisoR" value="60"> 1 h antes</label>
@@ -475,6 +498,21 @@
 </dialog>
 
 <!-- Diálogo: prazo -->
+<!-- Pergunta das séries (como no calendário da Apple): só este evento ou este e os seguintes -->
+<dialog id="d-serie">
+  <form method="dialog">
+    <div class="dlg-head"><h2 id="d-serie-titulo" style="margin:0">Este evento repete-se</h2></div>
+    <div class="dlg-body">
+      <p class="muted" id="d-serie-texto" style="margin:0 0 14px"></p>
+      <div class="serie-opcoes">
+        <button class="btn primary" value="este" id="d-serie-este">Só este evento</button>
+        <button class="btn" value="seguintes" id="d-serie-seguintes">Este e os seguintes</button>
+        <button class="btn" value="">Cancelar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="d-prazo">
   <form id="f-prazo" method="dialog">
     <div class="dlg-head">
@@ -525,6 +563,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=15"></script>
+<script src="app.js?v=16"></script>
 </body>
 </html>

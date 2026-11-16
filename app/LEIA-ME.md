@@ -61,3 +61,17 @@ Para os alertas do telemóvel saírem em cada repetição (e não só na primeir
 
 Enquanto o passo 1 não correr, a app funciona na mesma; o convidado só não vê "Ocupado" nas
 repetições do trabalho. A função nova também funciona antes do passo 1 (só não repete os avisos).
+
+## Calendário ao estilo da Apple (versão 16)
+- **Dia todo:** mostra "Dia todo" em vez da hora, fica no topo do dia e em faixa cheia no calendário.
+  O formulário passa a pedir só datas (início e fim) e os avisos passam a "No dia (9:00)",
+  "1 dia antes", "2 dias antes" e "1 semana antes", sempre às 9:00.
+- **Vários dias:** um evento que ocupa vários dias aparece em todos eles ("dia 2 de 3").
+- **Terminar repetição:** "Nunca" ou "Numa data" (último dia em que acontece).
+- **Editar ou apagar um evento que se repete:** pergunta "Só este evento" ou "Este e os seguintes"
+  (no primeiro dia: "Todos os eventos"). "Só este" tira esse dia da série e, ao guardar, cria um
+  registo à parte para esse dia.
+
+Activa-se correndo `supabase-series.sql` no SQL Editor (depois de `supabase-repeticoes.sql`) e
+publicando a função `enviar-alertas`. Sem o SQL, a app funciona; só "Terminar repetição" e
+"Só este evento" avisam que ainda não estão ativos.
