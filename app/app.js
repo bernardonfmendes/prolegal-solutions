@@ -84,6 +84,56 @@
     }
   }
   const repete = (x) => !!(x && x.repetir && x.repetir !== 'nunca');
+  // A série acontece neste dia? Respeita "terminar repetição" e os dias apagados/mudados só uma vez.
+  function ocorre(m, dia) {
+    const base = new Date(m.inicio);
+    if (!repete(m)) return diasEntre(base, dia) === 0;
+    const k = dayKey(dia);
+    if (m.repetir_ate && k > m.repetir_ate) return false;
+    if (Array.isArray(m.excecoes) && m.excecoes.includes(k)) return false;
+    return ocorreEm(base, m.repetir, dia, m.dias_semana);
+  }
+  // Quantos dias a mais ocupa cada ocorrência (0 = só um dia). Acabar às 00:00 conta para o dia anterior.
+  function diasExtra(m) {
+    if (!m.fim) return 0;
+    const ini = new Date(m.inicio);
+    const fim = new Date(m.fim);
+    if (fim <= ini) return 0;
+    if (!m.dia_todo && fim.getHours() === 0 && fim.getMinutes() === 0) fim.setMinutes(-1);
+    return Math.min(62, Math.max(0, diasEntre(ini, fim)));
+  }
+  // A ocorrência que está a decorrer em `dia`: começou nesse dia, ou antes e ainda não acabou
+  function ocorrenciaNoDia(m, dia) {
+    const extra = diasExtra(m);
+    for (let k = 0; k <= extra; k++) {
+      const inicio = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate() - k);
+      if (ocorre(m, inicio)) return { inicio, parte: k, dias: extra + 1 };
+    }
+    return null;
+  }
+  // Próxima vez que a série acontece (ou está a decorrer) a partir de `desde`
+  function proximaOcorrencia(m, desde) {
+    const d = startOfDay(desde);
+    for (let i = 0; i < 800; i++, d.setDate(d.getDate() + 1)) {
+      const o = ocorrenciaNoDia(m, d);
+      if (o) return o.inicio;
+    }
+    return null;
+  }
+  const fmtData = (d) => new Date(d).toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: '2-digit' });
+  const fmtHoraCurta = (d) => new Date(d).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+  // "quinta, 19/11 · Dia todo" · "quinta, 19/11, 10:00 – 11:00" · "sexta, 20/11, 22:00 – sábado, 21/11, 02:00"
+  function textoQuando(m) {
+    const ini = new Date(m.inicio);
+    const extra = diasExtra(m);
+    if (m.dia_todo) {
+      const ultimo = new Date(ini.getFullYear(), ini.getMonth(), ini.getDate() + extra);
+      return extra ? `${fmtData(ini)} – ${fmtData(ultimo)} · Dia todo` : `${fmtData(ini)} · Dia todo`;
+    }
+    if (!m.fim) return fmtDataHora(m.inicio);
+    return extra ? `${fmtDataHora(m.inicio)} – ${fmtDataHora(m.fim)}` : `${fmtDataHora(m.inicio)} – ${fmtHoraCurta(m.fim)}`;
+  }
+  const diaAnterior = (key) => { const d = diaDeTexto(key); d.setDate(d.getDate() - 1); return dayKey(d); };
   // "Todas as semanas · Seg, Qui"
   const textoSerie = (x) => (REPETE[x.repetir] || '') + (diasDaSerie(x.repetir, x.dias_semana) ? ' · ' + [...x.dias_semana].sort().map((d) => DIAS_CURTOS[d - 1]).join(', ') : '');
   // A mesma reunião (ou "ocupado") noutro dia: mesma hora e duração
@@ -205,7 +255,7 @@
           <strong>${esc(m.cliente)}</strong>
           <div class="card-chips">${avisoReuniaoAtivo(m) ? '<span class="chip urgente">Aviso</span>' : ''}${m.confirmada ? '<span class="chip ok">Confirmada</span>' : ''}<span class="chip ${esc(m.estado)}">${LABEL[m.estado] || esc(m.estado)}</span></div>
         </div>
-        <div class="quando">${fmtDataHora(m.inicio)}${m.fim && !m.dia_todo ? ' – ' + new Date(m.fim).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : ''}${ehPessoal(m.categoria_id) ? '' : ' · ' + fmtEur(m.honorarios)}</div>
+        <div class="quando">${esc(textoQuando(m))}${pessoal ? '' : ' · ' + fmtEur(m.honorarios)}${m._parte ? ` <span class="parte">(dia ${m._parte.n} de ${m._parte.de})</span>` : ''}</div>
         <div class="cat-nome" style="--cat:${esc(cat.cor)}"><span class="cat-ponto" aria-hidden="true"></span>${esc(cat.nome)}${m.local ? ' · ' + esc(m.local) : ''}${esc(serie)}</div>
         ${m.topicos ? `<p>${esc(m.topicos)}</p>` : ''}
         ${enviada ? `<div style="margin-top:6px">${enviada}</div>` : ''}
@@ -213,7 +263,7 @@
           ${pendente ? botoesConfirmar(m) : ''}
           ${pendente ? `<button class="btn small" data-confirmada="${m.id}">Confirmou</button>` : ''}
           ${!pessoal && !m._repeticao && m.estado === 'agendada' && !futura ? `<button class="btn small" data-realizar="${m.id}">Marcar realizada</button>` : ''}
-          <button class="btn small" data-edit="${m.id}">${repete(m) ? 'Editar série' : 'Editar'}</button>
+          <button class="btn small" data-edit="${m.id}"${repete(m) ? ` data-ocorrencia="${dayKey(new Date(m.inicio))}"` : ''}>Editar</button>
         </div>
       </article>`;
   }
@@ -279,8 +329,8 @@
     const proximas = reunioes
       .filter((m) => m.estado === 'agendada')
       .map((m) => {
-        if (!repete(m)) return new Date(m.inicio) >= hojeIni ? m : null;
-        const d = proximaData(new Date(m.inicio), m.repetir, hojeIni, m.dias_semana);
+        if (!repete(m)) return new Date(m.fim || m.inicio) >= hojeIni ? m : null;
+        const d = proximaOcorrencia(m, hojeIni);
         return d ? naData(m, d) : null;
       })
       .filter(Boolean)
@@ -330,12 +380,13 @@
     const out = [];
     const dia = diaDeTexto(key);
     // Reuniões e "ocupado": no dia marcado e, se se repetem, em cada repetição
+    // Eventos de vários dias aparecem em todos os dias que ocupam; dia todo fica no topo, sem hora
     const comHora = (lista, tipo) => lista.forEach((m) => {
-      const base = new Date(m.inicio);
-      if (repete(m) ? ocorreEm(base, m.repetir, dia, m.dias_semana) : dayKey(base) === key) {
-        const x = naData(m, dia);
-        out.push({ tipo, dados: x, hora: x.dia_todo ? null : new Date(x.inicio) });
-      }
+      const o = ocorrenciaNoDia(m, dia);
+      if (!o) return;
+      const x = { ...naData(m, o.inicio) };
+      if (o.dias > 1) x._parte = { n: o.parte + 1, de: o.dias };
+      out.push({ tipo, dados: x, hora: x.dia_todo || o.parte > 0 ? null : new Date(x.inicio) });
     });
     comHora(reunioes, 'reuniao');
     comHora(ocupados, 'ocupado');
@@ -350,7 +401,7 @@
   // Trabalho da dona, visto pelo convidado: só a hora. Sem cliente, local nem assunto.
   function cardOcupado(o) {
     const h = (iso) => new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
-    const quando = o.dia_todo ? 'Todo o dia' : h(o.inicio) + (o.fim ? ' – ' + h(o.fim) : '');
+    const quando = o.dia_todo || o._parte ? 'Dia todo' : h(o.inicio) + (o.fim ? ' – ' + h(o.fim) : '');
     return `<article class="card ocupado"><div class="row"><strong>Ocupado</strong></div><div class="muted">${esc(quando)}</div></article>`;
   }
 
@@ -380,7 +431,8 @@
         const prazo = it.tipo === 'prazo';
         const texto = prazo ? it.dados.descricao : it.dados.cliente;
         const feito = prazo && it.dados.concluido ? ' feito' : '';
-        return `<span class="chip-ev${prazo ? ' lembrete' : ''}${feito}" style="--c-bg:${rgba(c.cor, 0.16)};--c-fg:${esc(c.cor)}">${esc(texto || 'Sem título')}</span>`;
+        const todoDia = !prazo && (it.dados.dia_todo || it.dados._parte) ? ' todo-dia' : '';
+        return `<span class="chip-ev${prazo ? ' lembrete' : ''}${feito}${todoDia}" style="--c-bg:${rgba(c.cor, 0.16)};--c-fg:${esc(c.cor)}">${esc(texto || 'Sem título')}</span>`;
       }).join('');
       const mais = itens.length > 2 ? `<span class="cal-mais">+${itens.length - 2}</span>` : '';
 
@@ -581,12 +633,18 @@
     await loadAll();
   }
 
-  function openReuniao(id, dia, pessoal) {
+  function openReuniao(id, dia, pessoal, ocorrencia) {
     const f = $('#f-reuniao');
     f.reset();
+    // As datas voltam a ter hora; "Dia todo" (aplicarDiaTodo) tira-a outra vez se for o caso
+    ['#r-inicio', '#r-fim'].forEach((sel) => { $(sel).type = 'datetime-local'; delete $(sel).dataset.hora; });
+    $('#r-ocorrencia').value = '';
     if (id) {
-      const m = reunioes.find((x) => x.id === id);
-      if (!m) return;
+      const m0 = reunioes.find((x) => x.id === id);
+      if (!m0) return;
+      // Aberto a partir de uma repetição: mostra as datas desse dia (como no calendário da Apple)
+      const m = ocorrencia && repete(m0) ? naData(m0, diaDeTexto(ocorrencia)) : m0;
+      if (ocorrencia && repete(m0)) $('#r-ocorrencia').value = ocorrencia;
       $('#r-id').value = m.id;
       $('#r-cliente').value = m.cliente || '';
       $('#r-telefone').value = m.telefone || '';
@@ -596,6 +654,8 @@
       $('#r-diatodo').checked = !!m.dia_todo;
       $('#r-local').value = m.local || '';
       $('#r-repetir').value = m.repetir || 'nunca';
+      $('#r-ate-modo').value = m.repetir_ate ? 'data' : 'nunca';
+      $('#r-ate').value = m.repetir_ate || '';
       setDiasSemana(m.dias_semana || []);
       encherCats('#r-cat', m.categoria_id, 'Reunião');
       aplicarModoPessoal();
@@ -603,7 +663,8 @@
       $('#r-topicos').value = m.topicos || '';
       $('#r-estado').value = m.estado;
       $('#r-confirmada').checked = !!m.confirmada;
-      setAvisosR(avisosDe(m));
+      setAvisosR(avisosDe(m), m.dia_todo);
+      aplicarDiaTodo(false);
       $('#d-reuniao-titulo').textContent = ehPessoal(m.categoria_id) ? 'Editar registo pessoal' : 'Editar reunião';
       $('#r-apagar').hidden = false;
     } else {
@@ -619,11 +680,14 @@
       $('#r-diatodo').checked = false;
       $('#r-local').value = '';
       $('#r-repetir').value = 'nunca';
+      $('#r-ate-modo').value = 'nunca';
+      $('#r-ate').value = '';
       setDiasSemana([]);
       const cp = pessoal ? categorias.find((c) => c.pessoal) : null;
       encherCats('#r-cat', cp ? cp.id : null, 'Reunião');
       aplicarModoPessoal();
       setAvisosR([1440, 120]);
+      aplicarDiaTodo(false);
     }
     $('#d-reuniao').showModal();
   }
@@ -631,7 +695,7 @@
   // ---------- dias da semana de uma repetição ----------
   const caixasDias = () => Array.from(document.querySelectorAll('input[name=diaSem]'));
   const diasMarcados = () => caixasDias().filter((i) => i.checked).map((i) => Number(i.value));
-  const diaDoInicio = () => { const v = $('#r-inicio').value; return v ? diaIso(new Date(v)) : null; };
+  const diaDoInicio = () => { const v = $('#r-inicio').value; return v ? diaIso(diaDeTexto(v.slice(0, 10))) : null; };
   function setDiasSemana(lista) {
     caixasDias().forEach((i) => { i.checked = lista.includes(Number(i.value)); });
     mostrarDiasSemana();
@@ -641,8 +705,47 @@
     const r = $('#r-repetir').value;
     const semanal = r === 'semanal' || r === 'quinzenal';
     $('#r-dias').hidden = !semanal;
+    // "Terminar repetição: Nunca / Numa data" só faz sentido quando repete
+    $('#r-fim-rep').hidden = r === 'nunca';
+    $('#r-ate').hidden = $('#r-ate-modo').value !== 'data';
     if (semanal && !diasMarcados().length && diaDoInicio()) setDiasSemanaSoVisual([diaDoInicio()]);
   }
+  // Dia todo: as datas deixam de ter hora e os avisos passam a ser "no dia / dias antes, às 9:00"
+  function aplicarDiaTodo(peloUtilizador) {
+    const todo = $('#r-diatodo').checked;
+    ['#r-inicio', '#r-fim'].forEach((sel, i) => {
+      const el = $(sel);
+      const v = el.value;
+      if (todo && el.type !== 'date') { el.dataset.hora = v.slice(11, 16); el.type = 'date'; el.value = v.slice(0, 10); }
+      else if (!todo && el.type !== 'datetime-local') { el.type = 'datetime-local'; el.value = v ? `${v}T${el.dataset.hora || (i ? '11:00' : '10:00')}` : ''; }
+    });
+    // Ao ligar "Dia todo", o fim passa a ser o mesmo dia (um só dia), salvo se já for depois
+    if (todo && peloUtilizador && (!$('#r-fim').value || $('#r-fim').value < $('#r-inicio').value)) $('#r-fim').value = $('#r-inicio').value;
+    $('#lbl-inicio').textContent = todo ? 'Início' : 'Data e hora';
+    $('#avisos-hora').hidden = todo;
+    $('#avisos-dia-todo').hidden = !todo;
+    if (todo && peloUtilizador && !document.querySelector('input[name=avisoD]:checked')) document.querySelector('input[name=avisoD][value="0"]').checked = true;
+  }
+  const lerAvisos = () => Array.from(document.querySelectorAll(`input[name=${$('#r-diatodo').checked ? 'avisoD' : 'avisoR'}]:checked`)).map((i) => Number(i.value));
+
+  // "Só este evento" / "Este e os seguintes" (devolve 'este', 'seguintes' ou '' se cancelar)
+  function perguntarSerie(acao, primeiro) {
+    const d = $('#d-serie');
+    $('#d-serie-titulo').textContent = acao === 'apagar' ? 'Apagar evento' : 'Guardar alterações';
+    $('#d-serie-texto').textContent = acao === 'apagar'
+      ? 'Este evento repete-se. Quer apagar só este dia, ou também todos os seguintes?'
+      : 'Este evento repete-se. Quer aplicar as alterações só a este dia, ou a este e a todos os seguintes?';
+    $('#d-serie-este').textContent = acao === 'apagar' ? 'Apagar só este evento' : 'Só este evento';
+    $('#d-serie-seguintes').textContent = acao === 'apagar' ? (primeiro ? 'Apagar todos' : 'Apagar este e os seguintes') : (primeiro ? 'Todos os eventos' : 'Este e os seguintes');
+    $('#d-serie-este').className = 'btn ' + (acao === 'apagar' ? 'danger' : 'primary');
+    $('#d-serie-seguintes').className = 'btn' + (acao === 'apagar' ? ' danger' : '');
+    d.returnValue = '';
+    return new Promise((resolve) => {
+      d.addEventListener('close', () => resolve(d.returnValue || ''), { once: true });
+      d.showModal();
+    });
+  }
+
   function setDiasSemanaSoVisual(lista) { caixasDias().forEach((i) => { i.checked = lista.includes(Number(i.value)); }); }
 
   function encherCats(sel, escolhida, omissao) {
@@ -704,14 +807,19 @@
   }
 
   // ---------- avisos das reuniões ----------
-  function setAvisosR(lista) {
-    document.querySelectorAll('input[name=avisoR]').forEach((i) => { i.checked = lista.includes(Number(i.value)); });
+  // Os avisos de dia todo e os de hora são conjuntos diferentes: só se marca o do tipo do registo
+  function setAvisosR(lista, diaTodo) {
+    document.querySelectorAll('input[name=avisoR]').forEach((i) => { i.checked = !diaTodo && lista.includes(Number(i.value)); });
+    document.querySelectorAll('input[name=avisoD]').forEach((i) => { i.checked = !!diaTodo && lista.includes(Number(i.value)); });
   }
 
   // Uma reunião tem aviso ativo quando já chegou a hora de algum dos avisos escolhidos e ainda não passou
   function avisoReuniaoAtivo(m) {
     if (m.estado !== 'agendada' || m.confirmada) return false;
-    const t = new Date(m.inicio).getTime();
+    // Dia todo: os avisos são contados a partir das 9:00 desse dia (como no calendário da Apple)
+    const base = new Date(m.inicio);
+    if (m.dia_todo) base.setHours(9, 0, 0, 0);
+    const t = base.getTime();
     const agora = Date.now();
     return t > agora && avisosDe(m).some((min) => agora >= t - min * 60000);
   }
@@ -874,7 +982,7 @@
     if (el.dataset.editCat) return openCat(el.dataset.editCat);
     if ('novaReuniao' in el.dataset) return openReuniao(null, null);
     if ('novoDia' in el.dataset) return openReuniao(null, diaSel);
-    if (el.dataset.edit) return openReuniao(el.dataset.edit);
+    if (el.dataset.edit) return openReuniao(el.dataset.edit, null, false, el.dataset.ocorrencia);
     if (el.dataset.confirm) return enviarConfirmacao(el.dataset.confirm, el.dataset.canal);
     if (el.dataset.confirmada) return atualizarReuniao(el.dataset.confirmada, { confirmada: true }, 'Marcada como confirmada');
     if (el.dataset.realizar) return atualizarReuniao(el.dataset.realizar, { estado: 'realizada' }, 'Reunião marcada como realizada');
@@ -904,7 +1012,8 @@
 
   document.addEventListener('change', (e) => {
     if (e.target.id === 'r-cat') aplicarModoPessoal(true);
-    if (e.target.id === 'r-repetir') mostrarDiasSemana();
+    if (e.target.id === 'r-repetir' || e.target.id === 'r-ate-modo') mostrarDiasSemana();
+    if (e.target.id === 'r-diatodo') aplicarDiaTodo(true);
     // Mudar a data com um só dia marcado leva esse dia atrás (ex.: passar de segunda para terça)
     if (e.target.id === 'r-inicio' && !$('#r-dias').hidden && diasMarcados().length <= 1 && diaDoInicio()) setDiasSemanaSoVisual([diaDoInicio()]);
     if (e.target.dataset.togglePrazo) togglePrazo(e.target.dataset.togglePrazo, e.target.checked);
@@ -924,68 +1033,126 @@
   $('#f-reuniao').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = $('#r-id').value;
-    const inicio = $('#r-inicio').value;
-    if (!inicio) { toast('Indique a data e a hora.'); return; }
+    const orig = id ? reunioes.find((x) => x.id === id) : null;
+    const todo = $('#r-diatodo').checked;
+    const vIni = $('#r-inicio').value;
+    const vFim = $('#r-fim').value;
+    if (!vIni) { toast(todo ? 'Indique o dia.' : 'Indique a data e a hora.'); return; }
+    // Dia todo guarda-se à meia-noite do primeiro e do último dia (o último conta inteiro)
+    const ini = todo ? diaDeTexto(vIni.slice(0, 10)) : new Date(vIni);
+    let fim = vFim ? (todo ? diaDeTexto(vFim.slice(0, 10)) : new Date(vFim)) : null;
+    if (fim && fim < ini) fim = todo ? new Date(ini) : null;
     const payload = {
       cliente: $('#r-cliente').value.trim(),
       telefone: $('#r-telefone').value.trim() || null,
       email: $('#r-email').value.trim() || null,
-      inicio: new Date(inicio).toISOString(),
+      inicio: ini.toISOString(),
       honorarios: Number($('#r-honorarios').value) || 0,
       topicos: $('#r-topicos').value.trim() || null,
       estado: $('#r-estado').value,
       confirmada: $('#r-confirmada').checked,
-      avisos_min: Array.from(document.querySelectorAll('input[name=avisoR]:checked')).map((i) => Number(i.value))
+      avisos_min: lerAvisos()
     };
     if (esquemaNovo) {
-      payload.fim = $('#r-fim').value ? new Date($('#r-fim').value).toISOString() : null;
-      payload.dia_todo = $('#r-diatodo').checked;
+      payload.fim = fim ? fim.toISOString() : null;
+      payload.dia_todo = todo;
       payload.local = $('#r-local').value.trim() || null;
       payload.repetir = $('#r-repetir').value;
       payload.categoria_id = $('#r-cat').value || null;
       // Dias da semana: só em "todas as semanas" / "de 15 em 15 dias"
       const dias = diasDaSerie(payload.repetir, diasMarcados());
-      const orig = id ? reunioes.find((x) => x.id === id) : null;
       if (dias || (orig && 'dias_semana' in orig)) payload.dias_semana = dias;
+      // Terminar repetição: "Nunca" ou o último dia escolhido
+      const ate = payload.repetir !== 'nunca' && $('#r-ate-modo').value === 'data' && $('#r-ate').value ? $('#r-ate').value : null;
+      if (ate || (orig && 'repetir_ate' in orig)) payload.repetir_ate = ate;
     }
-    if (id) {
-      const orig = reunioes.find((x) => x.id === id);
-      // Se a data mudou (remarcação), a confirmação anterior deixa de valer
-      if (orig && toLocalInput(orig.inicio) !== inicio) {
-        payload.confirmada = false;
-        payload.confirmacao_enviada_em = null;
-      }
+    const ocorr = $('#r-ocorrencia').value;
+    // Se a data mudou (remarcação), a confirmação anterior deixa de valer
+    const antes = orig ? (ocorr && repete(orig) ? naData(orig, diaDeTexto(ocorr)).inicio : orig.inicio) : null;
+    if (orig && new Date(antes).getTime() !== ini.getTime()) {
+      payload.confirmada = false;
+      payload.confirmacao_enviada_em = null;
     }
     // Num registo criado pelo outro, os lembretes escolhidos são só meus: não mexem nos dele.
-    const doOutro = id && (reunioes.find((x) => x.id === id) || {}).user_id !== user.id;
+    const doOutro = !!orig && orig.user_id !== user.id;
     const meus = payload.avisos_min;
     if (doOutro) delete payload.avisos_min;
-    const gravar = (p) => (id ? sb.from('reunioes').update(p).eq('id', id) : sb.from('reunioes').insert({ ...p, user_id: user.id }));
-    let res = await gravar(payload);
-    // Se supabase-repeticoes.sql ainda não correu, guarda sem os dias da semana em vez de falhar
-    let semDias = false;
-    if (res.error && 'dias_semana' in payload && /dias_semana/.test(res.error.message)) {
-      delete payload.dias_semana; semDias = true;
-      res = await gravar(payload);
+
+    // Grava; se a base de dados ainda não tiver uma coluna nova, grava sem ela em vez de falhar
+    const OPCIONAIS = ['dias_semana', 'repetir_ate', 'excecoes'];
+    let faltou = false;
+    async function gravar(fn, p) {
+      let r = await fn(p);
+      if (r.error && OPCIONAIS.some((c) => c in p && r.error.message.includes(c))) {
+        OPCIONAIS.forEach((c) => delete p[c]);
+        faltou = true;
+        r = await fn(p);
+      }
+      return r;
     }
+    const inserir = (p) => sb.from('reunioes').insert({ ...p, user_id: user.id }).select('id').single();
+    const atualizar = (p) => sb.from('reunioes').update(p).eq('id', id);
+
+    // Série aberta num dia concreto: pergunta "só este evento / este e os seguintes"
+    if (orig && repete(orig) && ocorr) {
+      const primeiro = ocorr === dayKey(new Date(orig.inicio));
+      const escolha = await perguntarSerie('guardar', primeiro);
+      if (!escolha) return;
+      if (escolha === 'este' || !primeiro) {
+        // Cria o registo novo (só este dia, ou a série a partir daqui) e corta o antigo
+        const novo = escolha === 'este' ? { ...payload, repetir: 'nunca', dias_semana: null, repetir_ate: null } : { ...payload };
+        if (doOutro) novo.avisos_min = meus;
+        const r1 = await gravar(inserir, novo);
+        if (r1.error) { toast('Erro: ' + r1.error.message); return; }
+        const corte = escolha === 'este' ? { excecoes: [...(orig.excecoes || []), ocorr] } : { repetir_ate: diaAnterior(ocorr) };
+        const r2 = await atualizar(corte);
+        if (r2.error) {
+          await sb.from('reunioes').delete().eq('id', r1.data.id);
+          toast(/excecoes|repetir_ate/.test(r2.error.message) ? 'Esta opção ainda não está ativa no servidor.' : 'Erro: ' + r2.error.message);
+          return;
+        }
+        $('#d-reuniao').close();
+        toast(escolha === 'este' ? 'Alterado só neste dia' : 'Alterado a partir deste dia');
+        await loadAll();
+        return;
+      }
+      // "Todos os eventos" a partir do primeiro dia: muda a série inteira (segue abaixo)
+    }
+
+    const res = await gravar(orig ? atualizar : inserir, payload);
     if (res.error) { toast('Erro: ' + res.error.message); return; }
-    if (semDias) toast('Guardado, mas os dias da semana ainda não estão ativos.');
+    if (faltou) toast('Guardado, mas algumas opções ainda não estão ativas no servidor.');
     if (doOutro) {
       const a = await sb.from('avisos_meus').upsert({ registo_id: id, user_id: user.id, avisos_min: meus }, { onConflict: 'registo_id,user_id' });
       if (a.error) toast('Guardado, mas os seus lembretes não: ' + a.error.message);
     }
     $('#d-reuniao').close();
-    if (!semDias) toast(ehPessoal(payload.categoria_id) ? 'Guardado' : 'Reunião guardada');
+    if (!faltou) toast(ehPessoal(payload.categoria_id) ? 'Guardado' : 'Reunião guardada');
     await loadAll();
   });
 
   $('#r-apagar').addEventListener('click', async () => {
     const id = $('#r-id').value;
-    if (!id || !confirm('Apagar esta reunião?')) return;
-    const { error } = await sb.from('reunioes').delete().eq('id', id);
-    if (error) { toast('Erro: ' + error.message); return; }
+    if (!id) return;
+    const orig = reunioes.find((x) => x.id === id);
+    const ocorr = $('#r-ocorrencia').value;
+    let res;
+    let msg = orig && ehPessoal(orig.categoria_id) ? 'Apagado' : 'Reunião apagada';
+    if (orig && repete(orig) && ocorr) {
+      // Como no calendário da Apple: só este dia, ou este e os seguintes (ou todos, no primeiro dia)
+      const primeiro = ocorr === dayKey(new Date(orig.inicio));
+      const escolha = await perguntarSerie('apagar', primeiro);
+      if (!escolha) return;
+      if (escolha === 'este') { res = await sb.from('reunioes').update({ excecoes: [...(orig.excecoes || []), ocorr] }).eq('id', id); msg = 'Apagado só neste dia'; }
+      else if (primeiro) res = await sb.from('reunioes').delete().eq('id', id);
+      else { res = await sb.from('reunioes').update({ repetir_ate: diaAnterior(ocorr) }).eq('id', id); msg = 'Apagado a partir deste dia'; }
+    } else {
+      if (!confirm(orig && ehPessoal(orig.categoria_id) ? 'Apagar este registo?' : 'Apagar esta reunião?')) return;
+      res = await sb.from('reunioes').delete().eq('id', id);
+    }
+    if (res.error) { toast(/excecoes|repetir_ate/.test(res.error.message) ? 'Esta opção ainda não está ativa no servidor.' : 'Erro: ' + res.error.message); return; }
     $('#d-reuniao').close();
-    toast('Reunião apagada');
+    toast(msg);
     await loadAll();
   });
 

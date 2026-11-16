@@ -81,13 +81,21 @@ function horaMinEmLisboa(iso: string): [number, number] {
     .formatToParts(new Date(iso)).map((p) => [p.type, p.value]));
   return [Number(v.hour) % 24, Number(v.minute)];
 }
-// Cada vez que a reunião acontece entre `desde` e `ate`, à mesma hora de Lisboa (acerta a mudança da hora)
-function ocorrencias(m: { inicio: string; repetir?: string; dias_semana?: number[] | null }, desde: Date, ate: Date): { inicio: string; ocorrencia: string }[] {
-  if (!REPETE.has(m.repetir || '')) return [{ inicio: m.inicio, ocorrencia: SEM_REPETICAO }];
+type Reuniao = { inicio: string; repetir?: string; dias_semana?: number[] | null; dia_todo?: boolean; repetir_ate?: string | null; excecoes?: string[] | null };
+// Dia todo: os avisos contam a partir das 9:00 desse dia (como no calendário da Apple)
+const HORA_DIA_TODO = 9;
+// Cada vez que a reunião acontece entre `desde` e `ate`, à mesma hora de Lisboa (acerta a mudança da hora).
+// Respeita "terminar repetição" (repetir_ate) e os dias tirados da série (excecoes).
+function ocorrencias(m: Reuniao, desde: Date, ate: Date): { inicio: string; ocorrencia: string }[] {
+  const [h, mi] = m.dia_todo ? [HORA_DIA_TODO, 0] : horaMinEmLisboa(m.inicio);
+  if (!REPETE.has(m.repetir || '')) {
+    return [{ inicio: m.dia_todo ? instanteEmLisboa(diaDe(m.inicio), h, mi).toISOString() : m.inicio, ocorrencia: SEM_REPETICAO }];
+  }
   const base = diaDe(m.inicio);
-  const [h, mi] = horaMinEmLisboa(m.inicio);
   const out: { inicio: string; ocorrencia: string }[] = [];
   for (let dia = diaDe(desde.toISOString()); dia <= diaDe(ate.toISOString()); dia = somaDias(dia, 1)) {
+    if (m.repetir_ate && dia > m.repetir_ate) break;
+    if (m.excecoes && m.excecoes.includes(dia)) continue;
     if (!ocorreEm(base, m.repetir!, dia, m.dias_semana)) continue;
     const t = instanteEmLisboa(dia, h, mi);
     if (t >= desde && t <= ate) out.push({ inicio: t.toISOString(), ocorrencia: dia });
@@ -103,6 +111,12 @@ const diaHora = (iso: string, diaTodo?: boolean) =>
     : { timeZone: ZONA, weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
 const diaDe = (iso: string) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: ZONA, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
+
+// "hoje", "amanhã", "em 3 dias" para um evento de dia todo
+function quandoDiaTodo(dia: string, hoje: string) {
+  const n = Math.round((Date.parse(dia) - Date.parse(hoje)) / 86400000);
+  return n <= 0 ? 'hoje' : n === 1 ? 'amanhã' : `em ${n} dias`;
+}
 
 function quantoFalta(min: number) {
   if (min <= 0) return 'agora';
@@ -138,9 +152,11 @@ Deno.serve(async () => {
     // entre duas execuções, e a seguinte já encontra a reunião começada. Por isso também se
     // olha para reuniões que começaram há pouco (FOLGA), para esse aviso não se perder.
     const desde = new Date(agora.getTime() - FOLGA_MS).toISOString();
+    // Dia todo guarda-se à meia-noite mas avisa às 9:00: procura-se desde o dia anterior
+    const desdeConsulta = new Date(agora.getTime() - 36 * 3600000).toISOString();
     const [reunioes, prazos, subs, convidados, catsPessoais, meus, novos] = await Promise.all([
       // As que começam nesta janela e todas as que se repetem (a próxima vez pode cair nesta janela)
-      sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local,categoria_id,repetir,dias_semana&estado=eq.agendada&inicio=lte.${limite}&or=(inicio.gte.${desde},repetir.neq.nunca)`),
+      sb(`reunioes?select=id,user_id,cliente,inicio,avisos_min,estado,local,categoria_id,repetir,dias_semana,dia_todo,repetir_ate,excecoes&estado=eq.agendada&inicio=lte.${limite}&or=(inicio.gte.${desdeConsulta},repetir.neq.nunca)`),
       sb(`prazos?select=id,user_id,descricao,data_limite,avisos,concluido,repetir&concluido=is.false`),
       sb(`push_subs?select=id,user_id,endpoint,p256dh,auth`),
       sb(`convidados?select=dono,convidado`).catch(() => []),
@@ -181,8 +197,10 @@ Deno.serve(async () => {
         if (agora.getTime() >= t - min * 60000 && agora.getTime() <= t + FOLGA_MS) {
           pendentes.push({
             user_id: u, registo_id: m.id, tipo: 'reuniao', minutos: min, ocorrencia: o.ocorrencia,
-            titulo: `${m.cliente || 'Reunião'} ${falta === 0 ? (t < agora.getTime() ? 'já começou' : 'agora') : quantoFalta(falta)}`,
-            corpo: `${fmtHora(m.inicio)}${m.local ? ' · ' + m.local : ''}`,
+            titulo: m.dia_todo
+              ? `${m.cliente || 'Reunião'} ${quandoDiaTodo(diaDe(m.inicio), diaDe(agora.toISOString()))}`
+              : `${m.cliente || 'Reunião'} ${falta === 0 ? (t < agora.getTime() ? 'já começou' : 'agora') : quantoFalta(falta)}`,
+            corpo: `${m.dia_todo ? 'Dia todo' : fmtHora(m.inicio)}${m.local ? ' · ' + m.local : ''}`,
             dia: diaDe(m.inicio)
           });
         }
