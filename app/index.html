@@ -135,9 +135,12 @@
   .chip-ev.ocupado{background:repeating-linear-gradient(135deg,rgba(120,130,150,.18) 0 4px,rgba(120,130,150,.08) 4px 8px);color:var(--muted)}
   .card.ocupado{border-style:dashed;box-shadow:none;background:transparent}
   .card.ocupado strong{color:var(--muted)}
-  .cat-nome{color:var(--cat);font-weight:600}
-  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .cat-nome{color:color-mix(in srgb, var(--cat) 42%, white)} }
-  :root[data-theme="dark"] .cat-nome{color:color-mix(in srgb, var(--cat) 42%, white)}
+  /* No cartão, o que manda é quando: dia e hora em destaque; categoria e repetição em segundo plano */
+  .quando{font-size:15px;font-weight:600;color:var(--ink);margin-top:3px;font-variant-numeric:tabular-nums}
+  .cat-nome{font-size:13px;font-weight:500;color:var(--muted);margin-top:4px}
+  .cat-ponto{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cat);margin-right:6px;vertical-align:1px}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .cat-ponto{background:color-mix(in srgb, var(--cat) 60%, white)} }
+  :root[data-theme="dark"] .cat-ponto{background:color-mix(in srgb, var(--cat) 60%, white)}
   .card.cat-borda{border-left:3px solid var(--cat)}
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .card.cat-borda{border-left-color:color-mix(in srgb, var(--cat) 55%, white)} }
   :root[data-theme="dark"] .card.cat-borda{border-left-color:color-mix(in srgb, var(--cat) 55%, white)}
@@ -359,7 +362,7 @@
     <button class="item so-dona" data-tab="v-fact">Faturação</button>
     <button class="item so-calendario so-dona" data-tab="v-cats">Categorias</button>
     <button class="item sair" data-logout>Sair</button>
-    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 14</p>
+    <p class="muted" style="margin:14px 2px 0;font-size:11px">Versão 15</p>
   </nav>
 </div>
 
@@ -522,6 +525,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>
