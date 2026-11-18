@@ -83,6 +83,8 @@
   .nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 88px; transition: height .4s var(--ease); }
   header.scrolled .nav { height: 70px; }
   .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; min-width: 0; }
+  header .wrap { max-width: 1400px; }
+  header .brand { flex: 0 0 auto; }
   .brand .mark { width: 46px; height: 40px; flex: 0 0 auto; }
   .brand .mark svg { width: 100%; height: 100%; }
   header .brand { transition: opacity .5s var(--ease), visibility .5s; }
@@ -361,7 +363,7 @@
 
   /* ---------- Responsivo ---------- */
   @media (max-width: 1080px) {
-    .links { gap: 24px; }
+    .links { gap: 14px; }
   }
   @media (max-width: 980px) {
     .links, .nav > .btn { display: none; }
