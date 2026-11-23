@@ -189,6 +189,8 @@
   .js .rv { opacity: 0; transform: translateY(30px); transition: opacity 1s var(--ease) var(--d, 0s), transform 1s var(--ease) var(--d, 0s); }
   .js .rv.in { opacity: 1; transform: none; }
   .js .rv-l { transform: translateX(-40px); } .js .rv-r { transform: translateX(40px); }
+  /* Botões e formulário: entrada rápida e sem espera, para nunca deixarem um espaço vazio ao descer a página */
+  .js .rv.rv-fast { transition-duration: .45s; transition-delay: 0s; }
   .js .rv-s { transform: translateY(40px) scale(.97); }
   .js .brand-title.rv { letter-spacing: .3em; transition: opacity 1.4s var(--ease) var(--d, 0s), letter-spacing 2s var(--ease) var(--d, 0s), transform 1s var(--ease) var(--d, 0s); }
   .js .brand-title.rv.in { letter-spacing: .12em; }
@@ -626,7 +628,7 @@
         <span class="label rv">Perguntas frequentes</span>
         <h2 class="rv" style="--d:.1s">Antes de <em>nos contactar.</em></h2>
         <p class="rv" style="--d:.2s">Não encontra a resposta que procura? Fale connosco, o primeiro passo é apenas uma mensagem.</p>
-        <a class="btn btn-line rv" style="--d:.3s" href="https://wa.me/351938357708?text=Ol%C3%A1%2C%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener">Falar por WhatsApp</a>
+        <a class="btn btn-line rv rv-fast" href="https://wa.me/351938357708?text=Ol%C3%A1%2C%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener">Falar por WhatsApp</a>
       </div>
       <div class="faq-list rv rv-r">
         <details><summary>Como posso marcar uma consulta?<i></i></summary><p>Pode enviar uma mensagem por WhatsApp, ligar para (+351) 938 357 708, enviar e-mail para geral@prolegalsolutions.pt ou preencher o <a href="#pedido">pedido de consulta</a> neste site.</p></details>
@@ -650,7 +652,7 @@
         <p class="rv" style="--d:.2s">Escolha como prefere ser contactado: por e-mail, o pedido chega diretamente ao escritório; por WhatsApp, abrimos a conversa com a sua mensagem já escrita.</p>
       </div>
 
-      <form id="request-form" class="req-form rv rv-s" novalidate>
+      <form id="request-form" class="req-form rv rv-s rv-fast" novalidate>
         <div class="field" data-f="name">
           <label for="f-name">Nome</label>
           <input id="f-name" type="text" autocomplete="name" maxlength="120" aria-describedby="e-name">
@@ -725,7 +727,7 @@
         <span class="label rv">Contacto</span>
         <h2 class="rv" style="--d:.1s">Fale connosco <em>hoje.</em></h2>
         <p class="contact-lead rv" style="--d:.2s">Resposta rápida e confidencial. O primeiro passo é apenas uma mensagem.</p>
-        <div class="contact-cta rv" style="--d:.3s">
+        <div class="contact-cta rv rv-fast">
           <a class="btn btn-gold" href="https://wa.me/351938357708?text=Ol%C3%A1%2C%20gostaria%20de%20marcar%20uma%20consulta." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>WhatsApp</a>
           <a class="btn btn-line" href="tel:+351938357708"><svg aria-hidden="true"><use href="#i-phone"/></svg>Ligar</a>
           <a class="btn btn-line" href="mailto:geral@prolegalsolutions.pt"><svg aria-hidden="true"><use href="#i-mail"/></svg>E-mail</a>
